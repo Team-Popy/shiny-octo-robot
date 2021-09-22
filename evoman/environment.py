@@ -33,7 +33,7 @@ class Environment(object):
                  enemymode="static",          # ai or static
                  speed="fastest",             # normal or fastest
                  inputscoded="no",            # yes or no
-                 randomini="no",              # yes or no
+                 randomini="yes",              # yes or no
                  sound="off",                  # on or off
                  contacthurt="player",        # player or enemy
                  logs="on",                   # on or off

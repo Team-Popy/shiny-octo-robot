@@ -1,5 +1,10 @@
 """ FIRST ATTEMPT TO USE DEAP AND DEMO TOGETHER, ONLY SOME PARTS CHANGED, MORE FROM DEMO HAS TO BE REMOVED"""
 
+#todo: ask if this research question goes beyond
+# does it go beyond? https://deap.readthedocs.io/en/master/api/tools.html
+# what to do to make it go beyond
+# if we compare selection tournament with best is it enough eg
+
 import sys
 
 sys.path.insert(0, 'evoman')
@@ -27,6 +32,8 @@ creator.create("Individual", list, fitness=creator.FitnessMin)
 
 IND_SIZE = 10
 
+#todo: which lines are necessary for us and which we can delete
+
 toolbox = base.Toolbox()
 toolbox.register("attribute", random.random)
 toolbox.register("individual", tools.initRepeat, creator.Individual,
@@ -49,6 +56,7 @@ if not os.path.exists(experiment_name):
 
 """ if you change the number of hidden neurons, the number of sensors changes as well, if we want
 to use perceptron we have to use only 1 hidden layer so that it works """
+#todo: is it really enough 1 layer
 n_hidden_neurons = 1
 
 # initializes simulation in individual evolution mode, for single static enemy.
@@ -77,7 +85,7 @@ n_vars = (env.get_num_sensors() + 1) * n_hidden_neurons + (n_hidden_neurons + 1)
 """ ATTENTION - everytime you change anything (besides gens), delete evoman_solstate file that is used here """
 dom_u = 1
 dom_l = -1
-npop = 20
+npop = 100
 gens = 10
 mutation = 0.2
 last_best = 0
@@ -149,6 +157,7 @@ def crossover(population_data):
 
         """ OUR PART STARTS """
         """ crossover """
+
         offspring = toolbox.mate(parent_1, parent_2)  # results in two new children in a tuple
         offspring_1 = offspring[0]
         offspring_2 = offspring[1]
@@ -172,6 +181,8 @@ def crossover(population_data):
 # todo: create our own way of replacing worst gonomes (or just remove everything and take all new offspring,
 #  we can check what's better)
 
+#todo: do we need something similar? to make sure that we don't get stuck in local worst solution
+
 # FROM DEMO CODE
 # kills the worst genomes, and replace with new best/random solutions
 def doomsday(pop, fit_pop):
@@ -193,6 +204,8 @@ def doomsday(pop, fit_pop):
 
 
 # todo: I think we can have it? but we can ask
+# todo: when to change to train and when to test
+
 # loads file with the best solution for testing
 if run_mode == 'test':
     bsol = np.loadtxt(experiment_name + '/best.txt')
