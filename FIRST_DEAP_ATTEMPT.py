@@ -1,9 +1,7 @@
 """ FIRST ATTEMPT TO USE DEAP AND DEMO TOGETHER, ONLY SOME PARTS CHANGED, MORE FROM DEMO HAS TO BE REMOVED"""
 
-#todo: ask if this research question goes beyond
-# does it go beyond? https://deap.readthedocs.io/en/master/api/tools.html
-# what to do to make it go beyond
-# if we compare selection tournament with best is it enough eg
+
+#todo: report details
 
 import sys
 
@@ -20,7 +18,6 @@ from deap import tools
 
 
 # evaluation CODE FROM DEMO
-# todo: ask if we can use it
 def evaluate(x):
     return np.array(list(map(lambda y: simulation(env, y), x)))
 
@@ -50,14 +47,14 @@ headless = True
 if headless:
     os.environ["SDL_VIDEODRIVER"] = "dummy"
 
-experiment_name = 'test_deap1'
+experiment_name = '23_09_trial_2'
 if not os.path.exists(experiment_name):
     os.makedirs(experiment_name)
 
 """ if you change the number of hidden neurons, the number of sensors changes as well, if we want
 to use perceptron we have to use only 1 hidden layer so that it works """
 #todo: is it really enough 1 layer
-n_hidden_neurons = 1
+n_hidden_neurons = 10
 
 # initializes simulation in individual evolution mode, for single static enemy.
 env = Environment(experiment_name=experiment_name,
@@ -85,8 +82,8 @@ n_vars = (env.get_num_sensors() + 1) * n_hidden_neurons + (n_hidden_neurons + 1)
 """ ATTENTION - everytime you change anything (besides gens), delete evoman_solstate file that is used here """
 dom_u = 1
 dom_l = -1
-npop = 100
-gens = 10
+npop = 20
+gens = 2
 mutation = 0.2
 last_best = 0
 
@@ -101,9 +98,12 @@ def simulation(env, x):
 #todo: ask if we can use it
 
 # normalizes CODE FROM DEMO
-def norm(x, pfit_pop):
-    if (max(pfit_pop) - min(pfit_pop)) > 0:
-        x_norm = (x - min(pfit_pop)) / (max(pfit_pop) - min(pfit_pop))
+# todo: which normalization to use
+""" Melis """
+
+def norm(x, ppopulation_fitness):
+    if (max(ppopulation_fitness) - min(ppopulation_fitness)) > 0:
+        x_norm = (x - min(ppopulation_fitness)) / (max(ppopulation_fitness) - min(ppopulation_fitness))
     else:
         x_norm = 0
 
@@ -117,16 +117,31 @@ init_population = np.random.uniform(dom_l, dom_u, (npop, n_vars))
 
 
 #todo: create our own way of choosing parents
+""" Melis """
 
 # FROM DEMO - WE HAVE TO CHANGE IT LATER
+# def tournament(population, population_fitness):
+#     random_value_1 = np.random.randint(0, population.shape[0], 1)
+#     random_value_2 = np.random.randint(0, population.shape[0], 1)
+#
+#     if population_fitness[random_value_1] > population_fitness[random_value_2]:
+#         return population[random_value_1][0]
+#     else:
+#         return population[random_value_2][0]
+
+
 def tournament(population, population_fitness):
     random_value_1 = np.random.randint(0, population.shape[0], 1)
     random_value_2 = np.random.randint(0, population.shape[0], 1)
+    random_value_3 = np.random.randint(0, population.shape[0], 1)
 
-    if population_fitness[random_value_1] > population_fitness[random_value_2]:
-        return population[random_value_1][0]
-    else:
-        return population[random_value_2][0]
+    one = population_fitness[random_value_1]
+    two = population_fitness[random_value_2]
+    three = population_fitness[random_value_3]
+
+    max_value = max([one, two, three])[0]
+    index = population_fitness.index(max_value)
+    return population[index]
 
 
 
@@ -146,14 +161,15 @@ def limits(x):
 crossover_threshold, mutation_threshold = 0.5, 0.2
 
 
+""" Alicja """
 def crossover(population_data):
     total_offspring = np.zeros((0, n_vars))  # tuple shape (0, num_of_sensors)
 
     # this loop is from DEMO
     for p in range(0, population_data.shape[0], 2):
         # todo: here I made a mix of tournament and deap we should change it later
-        parent_1 = tournament(population_data, fit_pop)[::2]
-        parent_2 = tournament(population_data, fit_pop)[1::2]
+        parent_1 = tournament(population_data, population_fitness)[::2]
+        parent_2 = tournament(population_data, population_fitness)[1::2]
 
         """ OUR PART STARTS """
         """ crossover """
@@ -185,9 +201,11 @@ def crossover(population_data):
 
 # FROM DEMO CODE
 # kills the worst genomes, and replace with new best/random solutions
-def doomsday(pop, fit_pop):
+
+""" Alicja """
+def doomsday(pop, population_fitness):
     worst = int(npop / 4)  # a quarter of the population
-    order = np.argsort(fit_pop)
+    order = np.argsort(population_fitness)
     orderasc = order[0:worst]
 
     for o in orderasc:
@@ -198,13 +216,16 @@ def doomsday(pop, fit_pop):
             else:
                 pop[o][j] = pop[order[-1:]][0][j]  # dna from best
 
-        fit_pop[o] = evaluate([pop[o]])
+        population_fitness[o] = evaluate([pop[o]])
 
-    return pop, fit_pop
+    return pop, population_fitness
 
 
 # todo: I think we can have it? but we can ask
 # todo: when to change to train and when to test
+
+
+
 
 # loads file with the best solution for testing
 if run_mode == 'test':
@@ -223,12 +244,12 @@ if not os.path.exists(experiment_name + '/evoman_solstate'):
     print('\nNEW EVOLUTION\n')
 
     pop = np.random.uniform(dom_l, dom_u, (npop, n_vars))
-    fit_pop = evaluate(pop)
-    best = np.argmax(fit_pop)
-    mean = np.mean(fit_pop)
-    std = np.std(fit_pop)
+    population_fitness = evaluate(pop)
+    best = np.argmax(population_fitness)
+    mean = np.mean(population_fitness)
+    std = np.std(population_fitness)
     ini_g = 0
-    solutions = [pop, fit_pop]
+    solutions = [pop, population_fitness]
     env.update_solutions(solutions)
 
 else:
@@ -237,30 +258,34 @@ else:
 
     env.load_state()
     pop = env.solutions[0]
-    fit_pop = env.solutions[1]
+    population_fitness = env.solutions[1]
 
-    best = np.argmax(fit_pop)
-    mean = np.mean(fit_pop)
-    std = np.std(fit_pop)
+    best = np.argmax(population_fitness)
+    mean = np.mean(population_fitness)
+    std = np.std(population_fitness)
 
     # finds last generation number
     file_aux = open(experiment_name + '/gen.txt', 'r')
     ini_g = int(file_aux.readline())
     file_aux.close()
 
+test(pop, population_fitness)
+
 # todo: can we have it?
 # saves results for first pop
 file_aux = open(experiment_name + '/results.txt', 'a')
 file_aux.write('\n\ngen best mean std')
-print('\n GENERATION ' + str(ini_g) + ' ' + str(round(fit_pop[best], 6)) + ' ' + str(round(mean, 6)) + ' ' + str(
+print('\n GENERATION ' + str(ini_g) + ' ' + str(round(population_fitness[best], 6)) + ' ' + str(round(mean, 6)) + ' ' + str(
     round(std, 6)))
 file_aux.write(
-    '\n' + str(ini_g) + ' ' + str(round(fit_pop[best], 6)) + ' ' + str(round(mean, 6)) + ' ' + str(round(std, 6)))
+    '\n' + str(ini_g) + ' ' + str(round(population_fitness[best], 6)) + ' ' + str(round(mean, 6)) + ' ' + str(round(std, 6)))
 file_aux.close()
 
 # evolution
 
-last_sol = fit_pop[best]
+""" Alicja """
+
+last_sol = population_fitness[best]
 notimproved = 0
 
 for i in range(ini_g + 1, gens):
@@ -269,56 +294,63 @@ for i in range(ini_g + 1, gens):
 
     # amount of offspring is not constant in this solution
 
-    offspring = crossover(pop)  # crossover
-    fit_offspring = evaluate(offspring)  # evaluation
+    """ first do crossover """
+    offspring = crossover(pop)
+
+    """ then evaluate the fitness scores """
+    fit_offspring = evaluate(offspring)
+
+    """ combine old population with the offspring """
     pop = np.vstack((pop, offspring))
-    fit_pop = np.append(fit_pop, fit_offspring)
 
-    best = np.argmax(fit_pop)  # best solution in generation
-    fit_pop[best] = float(evaluate(np.array([pop[best]]))[0])  # repeats best eval, for stability issues
-    best_sol = fit_pop[best]
+    """ it adds ndarrays horizontally """
+    population_fitness = np.append(population_fitness, fit_offspring)
 
-    # selection
-    fit_pop_cp = fit_pop
-    fit_pop_norm = np.array(list(map(lambda y: norm(y, fit_pop_cp),
-                                     fit_pop)))  # avoiding negative probabilities, as fitness is ranges from negative numbers
-    probs = (fit_pop_norm) / (fit_pop_norm).sum()
-    chosen = np.random.choice(pop.shape[0], npop, p=probs, replace=False)
-    chosen = np.append(chosen[1:], best)
-    pop = pop[chosen]
-    fit_pop = fit_pop[chosen]
+    """ survival selection """
+    best_fitness_scores_indexes = np.argpartition(population_fitness, -npop)[-npop:]
 
-    # todo: read about it
+    """ normalizing - should we use this part of code? """
+    # population_fitness_cp = population_fitness
+    # population_fitness_norm = np.array(list(map(lambda y: norm(y, population_fitness_cp),
+    #                                  population_fitness)))  # avoiding negative probabilities, as fitness is ranges from negative numbers
+    # probs = (population_fitness_norm) / (population_fitness_norm).sum()
+    #
+    # chosen = np.random.choice(pop.shape[0], npop, p=probs, replace=False)
+    # chosen = np.append(chosen[1:], best)
 
-    # searching new areas
+    """ update population and fitness scores """
+    pop = pop[best_fitness_scores_indexes]
+    population_fitness = population_fitness[best_fitness_scores_indexes]
 
-    # todo: what is this
 
-    if best_sol <= last_sol:
-        notimproved += 1
-    else:
-        last_sol = best_sol
-        notimproved = 0
+    # todo: how to preserve diversity
 
-    if notimproved >= 15:
-        file_aux = open(experiment_name + '/results.txt', 'a')
-        file_aux.write('\ndoomsday')
-        file_aux.close()
+    # if best_sol <= last_sol:
+    #     notimproved += 1
+    # else:
+    #     last_sol = best_sol
+    #     notimproved = 0
+    #
+    # if notimproved >= 15:
+    #     file_aux = open(experiment_name + '/results.txt', 'a')
+    #     file_aux.write('\ndoomsday')
+    #     file_aux.close()
+    #
+    #     pop, population_fitness = doomsday(pop, population_fitness)
+    #     notimproved = 0
+    #
+    best = np.argmax(population_fitness)
+    std = np.std(population_fitness)
+    mean = np.mean(population_fitness)
 
-        pop, fit_pop = doomsday(pop, fit_pop)
-        notimproved = 0
 
-    best = np.argmax(fit_pop)
-    std = np.std(fit_pop)
-    mean = np.mean(fit_pop)
-
-    # todo: can we have it?
+    # todo: can use have it?
     # saves results
     file_aux = open(experiment_name + '/results.txt', 'a')
-    print('\n GENERATION ' + str(i) + ' ' + str(round(fit_pop[best], 6)) + ' ' + str(round(mean, 6)) + ' ' + str(
+    print('\n GENERATION ' + str(i) + ' ' + str(round(population_fitness[best], 6)) + ' ' + str(round(mean, 6)) + ' ' + str(
         round(std, 6)))
     file_aux.write(
-        '\n' + str(i) + ' ' + str(round(fit_pop[best], 6)) + ' ' + str(round(mean, 6)) + ' ' + str(round(std, 6)))
+        '\n' + str(i) + ' ' + str(round(population_fitness[best], 6)) + ' ' + str(round(mean, 6)) + ' ' + str(round(std, 6)))
     file_aux.close()
 
     # saves generation number
@@ -330,7 +362,7 @@ for i in range(ini_g + 1, gens):
     np.savetxt(experiment_name + '/best.txt', pop[best])
 
     # saves simulation state
-    solutions = [pop, fit_pop]
+    solutions = [pop, population_fitness]
     env.update_solutions(solutions)
     env.save_state()
 

@@ -14,3 +14,12 @@ gen best mean std
 
 gen best mean std
 9 92.770654 85.036344 14.737081
+
+gen best mean std
+9 92.770654 85.036344 14.737081
+
+gen best mean std
+9 92.770654 85.036344 14.737081
+
+gen best mean std
+9 92.770654 85.036344 14.737081

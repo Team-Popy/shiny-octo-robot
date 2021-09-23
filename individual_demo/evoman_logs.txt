@@ -28,7 +28,7 @@ clock precision: low
 
 inputs coded: no
 
-random initialization: no
+random initialization: yes
 
 expiration time: 3000
 
