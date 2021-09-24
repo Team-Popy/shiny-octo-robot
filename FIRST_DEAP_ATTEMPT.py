@@ -1,6 +1,6 @@
 """ FIRST ATTEMPT TO USE DEAP AND DEMO TOGETHER, ONLY SOME PARTS CHANGED, MORE FROM DEMO HAS TO BE REMOVED"""
 
-#todo: ask if this research question goes beyond
+# todo: ask if this research question goes beyond
 # does it go beyond? https://deap.readthedocs.io/en/master/api/tools.html
 # what to do to make it go beyond
 # if we compare selection tournament with best is it enough eg
@@ -32,14 +32,14 @@ creator.create("Individual", list, fitness=creator.FitnessMin)
 
 IND_SIZE = 10
 
-#todo: which lines are necessary for us and which we can delete
+# todo: which lines are necessary for us and which we can delete
 
 toolbox = base.Toolbox()
 toolbox.register("attribute", random.random)
 toolbox.register("individual", tools.initRepeat, creator.Individual,
                  toolbox.attribute, n=IND_SIZE)
 toolbox.register("population", tools.initRepeat, list, toolbox.individual)
-toolbox.register("mate", tools.cxTwoPoint)
+toolbox.register("mate", tools.cxUniform, indpb=0.1)
 toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=1, indpb=0.1)
 toolbox.register("select", tools.selTournament, tournsize=3)
 toolbox.register("evaluate", evaluate)
@@ -56,7 +56,7 @@ if not os.path.exists(experiment_name):
 
 """ if you change the number of hidden neurons, the number of sensors changes as well, if we want
 to use perceptron we have to use only 1 hidden layer so that it works """
-#todo: is it really enough 1 layer
+# todo: is it really enough 1 layer
 n_hidden_neurons = 1
 
 # initializes simulation in individual evolution mode, for single static enemy.
@@ -77,7 +77,7 @@ ini = time.time()  # sets time marker
 # genetic algorithm params
 run_mode = 'train'  # train or test
 
-#todo: understand this formula why are there these numbers
+# todo: understand this formula why are there these numbers
 
 # number of weights for multilayer with 10 hidden neurons
 n_vars = (env.get_num_sensors() + 1) * n_hidden_neurons + (n_hidden_neurons + 1) * 5
@@ -87,19 +87,20 @@ dom_u = 1
 dom_l = -1
 npop = 100
 gens = 10
-mutation = 0.2
+crossover_threshold = 0.5
+mutation_threshold = 0.2
 last_best = 0
 
 
-#todo: ask if we can use it
+# todo: ask if we can use it - it will be better if we can rename the variables for sure, but we can use it
 
 # runs simulation CODE FROM DEMO
 def simulation(env, x):
     f, p, e, t = env.play(pcont=x)
     return f
 
-#todo: ask if we can use it
 
+# todo: ask if we can use it - this is the only way to make a normalization by scratch (I think)
 # normalizes CODE FROM DEMO
 def norm(x, pfit_pop):
     if (max(pfit_pop) - min(pfit_pop)) > 0:
@@ -116,7 +117,7 @@ def norm(x, pfit_pop):
 init_population = np.random.uniform(dom_l, dom_u, (npop, n_vars))
 
 
-#todo: create our own way of choosing parents
+# todo: create our own way of choosing parents - parent selection
 
 # FROM DEMO - WE HAVE TO CHANGE IT LATER
 def tournament(population, population_fitness):
@@ -129,8 +130,7 @@ def tournament(population, population_fitness):
         return population[random_value_2][0]
 
 
-
-#todo: ask if we can use it
+# todo: ask if we can use it
 
 # limits FROM DEMO
 def limits(x):
@@ -142,46 +142,67 @@ def limits(x):
         return x
 
 
-""" DEAP IMPLEMENTATION PARTIALLY """
-crossover_threshold, mutation_threshold = 0.5, 0.2
+def one_point_crossover_uniform_mutation(population_data):
+    total_offspring = np.zeros((0, n_vars))
 
+    crossover_point = {np.uint8(n_vars / 4), np.uint8(n_vars - n_vars / 4)}
 
-def crossover(population_data):
-    total_offspring = np.zeros((0, n_vars))  # tuple shape (0, num_of_sensors)
-
-    # this loop is from DEMO
     for p in range(0, population_data.shape[0], 2):
-        # todo: here I made a mix of tournament and deap we should change it later
+        parent_1 = tournament(population_data)
+        parent_2 = tournament(population_data)
+
+        n_offspring = np.random.randint(1, 3 + 1, 1)[0]
+        offspring = np.zeros((n_offspring, n_vars))
+
+        for k in range(0, n_offspring):
+
+            for m in crossover_point:
+                offspring[k, 0:m], offspring[k, m:] = single_point_crossover(parent_1, parent_2, m)
+
+            # mutation
+            for idx in range(offspring.shape[0]):
+                if np.random.uniform(-1.0, 1.0, 1) <= mutation_threshold:
+                    random_value = np.random.uniform(-1.0, 1.0, 1)
+                    offspring[k][idx] = offspring[k][idx] + random_value
+            total_offspring = np.vstack((total_offspring, offspring[k]))
+
+    return total_offspring
+
+
+def single_point_crossover(parent_1, parent_2, crossover_point):
+    child_1 = np.append(parent_1[:crossover_point], parent_2[crossover_point:])
+    child_2 = np.append(parent_2[:crossover_point], parent_1[crossover_point:])
+    return child_1, child_2
+
+
+def uniform_crossover_gausian_mutation(population_data):
+    total_offspring = np.zeros((0, n_vars))
+
+    for p in range(0, population_data.shape[0], 2):
         parent_1 = tournament(population_data, fit_pop)[::2]
         parent_2 = tournament(population_data, fit_pop)[1::2]
 
-        """ OUR PART STARTS """
-        """ crossover """
+        n_offspring = np.random.randint(1, 3 + 1, 1)[0]
+        offspring = np.zeros((n_offspring, n_vars))
 
-        offspring = toolbox.mate(parent_1, parent_2)  # results in two new children in a tuple
-        offspring_1 = offspring[0]
-        offspring_2 = offspring[1]
+        for k in range(0, n_offspring):
+            if random.random() < crossover_threshold:
+                toolbox.mate(parent_1, parent_2)
 
-        """ combine them together?"""
-        one_offspring = np.hstack((offspring_1, offspring_2))
+            """ mutation """
+            for mutant in offspring:
+                if random.random() < mutation_threshold:
+                    toolbox.mutate(mutant)
 
-        """ mutation """
-        if random.random() < mutation_threshold:
-            mutant_prior = toolbox.clone(one_offspring)
-            mutated_offspring = toolbox.mutate(one_offspring)[0]
-            total_offspring = np.vstack((total_offspring, mutated_offspring))
+            total_offspring = np.vstack((total_offspring, offspring[k]))
 
-        else:
-            total_offspring = np.vstack((total_offspring, one_offspring))
-
-    """ OUR PART ENDS """
-    return total_offspring  # has to be (x, 31) shape
+    return total_offspring
 
 
-# todo: create our own way of replacing worst gonomes (or just remove everything and take all new offspring,
+# todo: create our own way of replacing worst genomes (or just remove everything and take all new offspring,
 #  we can check what's better)
 
-#todo: do we need something similar? to make sure that we don't get stuck in local worst solution
+# todo: do we need something similar? to make sure that we don't get stuck in local worst solution
 
 # FROM DEMO CODE
 # kills the worst genomes, and replace with new best/random solutions
