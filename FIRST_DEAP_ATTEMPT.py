@@ -111,11 +111,11 @@ def tournament_selection(population, population_fitness):
     second_fitness = population_fitness[random_val_2]
     third_fitness = population_fitness[random_val_3]
 
-    max_fitness = max([first_fitness, second_fitness, third_fitness])[0]
+    max_fitness = max([first_fitness, second_fitness, third_fitness])
 
-    best_fitness_index = population_fitness.index(max_fitness)
+    best_fitness_index = list(population_fitness).index(max_fitness)
 
-    return population[best_fitness_index][0]
+    return population[best_fitness_index]
 
 
 ################################################################# CHECK
