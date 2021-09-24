@@ -48,86 +48,62 @@ save logs: yes
 
 ########## Simulation state - END ###########
 
-PARAMETER CHANGE: enemies = [3]
+RUN: run status: enemy: 3; fitness: 3.337039519864054; player life: 0; enemy life: 90.0; time: 288
 
-PARAMETER CHANGE: timeexpire = 3000
+RUN: run status: enemy: 3; fitness: -5.799092654460526; player life: 0; enemy life: 100; time: 330
 
-PARAMETER CHANGE: level = 2
+RUN: run status: enemy: 3; fitness: -5.840641657373398; player life: 0; enemy life: 100; time: 344
 
-PARAMETER CHANGE: enemyn = 3
+RUN: run status: enemy: 3; fitness: -5.8289456176102075; player life: 0; enemy life: 100; time: 340
 
-PARAMETER CHANGE: overturetime = 100
+RUN: run status: enemy: 3; fitness: -5.834810737062605; player life: 0; enemy life: 100; time: 342
 
-PARAMETER CHANGE: playermode = ai
+RUN: run status: enemy: 3; fitness: -5.840641657373398; player life: 0; enemy life: 100; time: 344
 
-PARAMETER CHANGE: enemymode = static
+RUN: run status: enemy: 3; fitness: -5.697093486505405; player life: 0; enemy life: 100; time: 298
 
-PARAMETER CHANGE: contacthurt = player
+RUN: run status: enemy: 3; fitness: -5.62040086571715; player life: 0; enemy life: 100; time: 276
 
-PARAMETER CHANGE: clockprec = low
+RUN: run status: enemy: 3; fitness: -4.248495242049359; player life: 0; enemy life: 100; time: 70
 
-PARAMETER CHANGE: inputscoded = no
+RUN: run status: enemy: 3; fitness: -5.799092654460526; player life: 0; enemy life: 100; time: 330
 
-PARAMETER CHANGE: randomini = yes
+RUN: run status: enemy: 3; fitness: 3.401578041001625; player life: 0; enemy life: 90.0; time: 270
 
-PARAMETER CHANGE: multiplemode = no
+RUN: run status: enemy: 3; fitness: -5.68697535633982; player life: 0; enemy life: 100; time: 295
 
-PARAMETER CHANGE: speed = fastest
+RUN: run status: enemy: 3; fitness: 30.168117522716482; player life: 0; enemy life: 60.0; time: 341
 
-PARAMETER CHANGE: loadplayer = yes
+RUN: run status: enemy: 3; fitness: 2.5138392110559113; player life: 0; enemy life: 90.0; time: 656
 
-PARAMETER CHANGE: loadenemy = yes
+RUN: run status: enemy: 3; fitness: -5.840641657373398; player life: 0; enemy life: 100; time: 344
 
-PARAMETER CHANGE: sound = off
+RUN: run status: enemy: 3; fitness: -6.144185634125646; player life: 0; enemy life: 100; time: 466
 
-PARAMETER CHANGE: logs = on
+RUN: run status: enemy: 3; fitness: -6.343880434126331; player life: 0; enemy life: 100; time: 569
 
-PARAMETER CHANGE: savelogs = yes
+RUN: run status: enemy: 3; fitness: -6.343880434126331; player life: 0; enemy life: 100; time: 569
 
-MESSAGE: state has been loaded.
+RUN: run status: enemy: 3; fitness: -5.8377304471659395; player life: 0; enemy life: 100; time: 343
 
-########## Simulation state - INI ###########
+RUN: run status: enemy: 3; fitness: -6.322565239927284; player life: 0; enemy life: 100; time: 557
 
-# solutions # : LOADED 
+RUN: run status: enemy: 3; fitness: -5.808142489980444; player life: 0; enemy life: 100; time: 333
 
-# sensors # : 20
+RUN: run status: enemy: 3; fitness: -6.013715156042802; player life: 0; enemy life: 100; time: 409
 
- ------  parameters ------  
+RUN: run status: enemy: 3; fitness: -5.834810737062605; player life: 0; enemy life: 100; time: 342
 
-# contact hurt (training agent) # : player
+RUN: run status: enemy: 3; fitness: -5.834810737062605; player life: 0; enemy life: 100; time: 342
 
-multiple mode: no
+RUN: run status: enemy: 3; fitness: -4.248495242049359; player life: 0; enemy life: 100; time: 70
 
-enemies list: 3
+RUN: run status: enemy: 3; fitness: -5.62040086571715; player life: 0; enemy life: 100; time: 276
 
-current enemy: 3
+RUN: run status: enemy: 3; fitness: -3.970291913552122; player life: 0; enemy life: 100; time: 53
 
-player mode: ai
+RUN: run status: enemy: 3; fitness: -6.343880434126331; player life: 0; enemy life: 100; time: 569
 
-enemy mode: static
+RUN: run status: enemy: 3; fitness: -5.814130531825066; player life: 0; enemy life: 100; time: 335
 
-level: 2
-
-clock precision: low
-
-inputs coded: no
-
-random initialization: yes
-
-expiration time: 3000
-
-speed: fastest
-
-load player: yes
-
-load enemy: yes
-
-sound: off
-
-overture time: 100
-
-logs: on
-
-save logs: yes
-
-########## Simulation state - END ###########
+RUN: run status: enemy: 3; fitness: 3.3029065134945954; player life: 0; enemy life: 90.0; time: 298

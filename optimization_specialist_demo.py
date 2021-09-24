@@ -23,11 +23,11 @@ headless = True
 if headless:
     os.environ["SDL_VIDEODRIVER"] = "dummy"
 
-experiment_name = 'individual_demo'
+experiment_name = 'test_layers1'
 if not os.path.exists(experiment_name):
     os.makedirs(experiment_name)
 
-n_hidden_neurons = 1
+n_hidden_neurons = 10
 
 # initializes simulation in individual evolution mode, for single static enemy.
 env = Environment(experiment_name=experiment_name,
@@ -56,7 +56,7 @@ n_vars = (env.get_num_sensors() + 1) * n_hidden_neurons + (n_hidden_neurons + 1)
 dom_u = 1
 dom_l = -1
 npop = 20
-gens = 10
+gens = 2
 mutation = 0.2
 last_best = 0
 
