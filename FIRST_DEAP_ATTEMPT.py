@@ -43,7 +43,8 @@ headless = True
 if headless:
     os.environ["SDL_VIDEODRIVER"] = "dummy"
 
-experiment_name = 'enemy_2_trial_1'
+""" CHANGE THE NAME TO ENEMY NUMBER, CROSSOVER NAME AND TRIAL """
+experiment_name = 'enemy_1_one_point_crossover_2'
 if not os.path.exists(experiment_name):
     os.makedirs(experiment_name)
 
@@ -51,7 +52,7 @@ n_hidden_neurons = 10
 
 # initializes simulation in individual evolution mode, for single static enemy.
 env = Environment(experiment_name=experiment_name,
-                  enemies=[2],
+                  enemies=[1],
                   playermode="ai",
                   player_controller=player_controller(n_hidden_neurons),
                   enemymode="static",
@@ -63,6 +64,7 @@ env.state_to_log()  # checks environment state
 # Optimization for controller solution (best genotype-weights for phenotype-network): Ganetic Algorihm    ###
 ini = time.time()  # sets time marker
 # genetic algorithm params
+""" CHANGE IT TO TEST TO TEST THE RESULTS """
 run_mode = 'train'  # train or test
 
 # todo: understand this formula why are there these numbers
@@ -73,8 +75,8 @@ n_vars = (env.get_num_sensors() + 1) * n_hidden_neurons + (n_hidden_neurons + 1)
 dom_u = 1
 dom_l = -1
 
-npop = 20
-gens = 2
+npop = 100
+gens = 30
 crossover_threshold = 0.5
 mutation_threshold = 0.2
 
@@ -114,10 +116,15 @@ def tournament_selection(population, population_fitness):
     second_fitness = population_fitness[random_val_2]
     third_fitness = population_fitness[random_val_3]
 
-    max_fitness = max([first_fitness, second_fitness, third_fitness])
+    """ change it later """
+    if np.random.uniform(-1.0, 1.0, 1)[0] <= 0.9:
+        max_fitness = max([first_fitness, second_fitness, third_fitness])
+
+    else:
+        max_fitness = min([first_fitness, second_fitness, third_fitness])
 
     best_fitness_index = list(population_fitness).index(max_fitness)
-
+    print(best_fitness_index)
     return population[best_fitness_index]
 
 
@@ -140,61 +147,60 @@ def limits(x):
         return x
 
 
-def one_point_crossover_uniform_mutation(population_data):
-    total_offspring = np.zeros((0, n_vars))
-
-    crossover_point = {np.uint8(n_vars / 4), np.uint8(n_vars - n_vars / 4)}
+def two_point_crossover_uniform_mutation(population_data):
+    offspring = np.zeros((2, n_vars))
+    crossover_point = [np.uint8(n_vars / 4), np.uint8(n_vars - n_vars / 4)]
 
     for p in range(0, population_data.shape[0], 2):
-        parent_1 = tournament_selection(population_data, population_fitness)[::2]
-        parent_2 = tournament_selection(population_data, population_fitness)[1::2]
+        parent_1 = tournament_selection(population_data, population_fitness)
+        parent_2 = tournament_selection(population_data, population_fitness)
 
-        n_offspring = np.random.randint(1, 3 + 1, 1)[0]
-        offspring = np.zeros((n_offspring, n_vars))
+        if np.array_equal(parent_1, parent_2):
+            parent_1 = toolbox.mutate(parent_1)[0]
 
-        for k in range(0, n_offspring):
+        for m in crossover_point:
+            parent_1, parent_2 = single_point_crossover(parent_1, parent_2, m)
 
-            for m in crossover_point:
-                offspring[k, 0:m], offspring[k, m:] = single_point_crossover(parent_1, parent_2, m)
+        offspring[0] = parent_1.copy()
+        offspring[1] = parent_2.copy()
+        # mutation
+        """ if it's too slow, think how to make it faster """
+        for idx in range(offspring.shape[0]):
+            if np.random.uniform(-1.0, 1.0, 1)[0] <= mutation_threshold:
+                random_value = np.random.uniform(-1.0, 1.0, 1)
+                offspring[idx] = offspring[idx] + random_value
 
-            # mutation
-            for idx in range(offspring.shape[0]):
-                if np.random.uniform(-1.0, 1.0, 1) <= mutation_threshold:
-                    random_value = np.random.uniform(-1.0, 1.0, 1)
-                    offspring[k][idx] = offspring[k][idx] + random_value
-            total_offspring = np.vstack((total_offspring, offspring[k]))
-
-    return total_offspring
+    return offspring
 
 
 def single_point_crossover(parent_1, parent_2, crossover_point):
-    child_1 = np.append(parent_1[:crossover_point], parent_2[crossover_point:])
-    child_2 = np.append(parent_2[:crossover_point], parent_1[crossover_point:])
-    return child_1, child_2
+    parent_1_new = np.append(parent_1[:crossover_point], parent_2[crossover_point:])
+    parent_2_new = np.append(parent_2[:crossover_point], parent_1[crossover_point:])
+    return parent_1_new, parent_2_new
 
 
-def uniform_crossover_gausian_mutation(population_data):
-    total_offspring = np.zeros((0, n_vars))
-
-    for p in range(0, population_data.shape[0], 2):
-        parent_1 = tournament_selection(population_data, population_fitness)[::2]
-        parent_2 = tournament_selection(population_data, population_fitness)[1::2]
-
-        n_offspring = np.random.randint(1, 3 + 1, 1)[0]
-        offspring = np.zeros((n_offspring, n_vars))
-
-        for k in range(0, n_offspring):
-            if random.random() < crossover_threshold:
-                toolbox.mate(parent_1, parent_2)
-
-            """ mutation """
-            for mutant in offspring:
-                if random.random() < mutation_threshold:
-                    toolbox.mutate(mutant)
-
-            total_offspring = np.vstack((total_offspring, offspring[k]))
-
-    return total_offspring
+# def uniform_crossover_gausian_mutation(population_data):
+#     total_offspring = np.zeros((0, n_vars))
+#
+#     for p in range(0, population_data.shape[0], 2):
+#         parent_1 = tournament_selection(population_data, population_fitness)[::2]
+#         parent_2 = tournament_selection(population_data, population_fitness)[1::2]
+#
+#         n_offspring = np.random.randint(1, 3 + 1, 1)[0]
+#         offspring = np.zeros((n_offspring, n_vars))
+#
+#         for k in range(0, n_offspring):
+#             if random.random() < crossover_threshold:
+#                 toolbox.mate(parent_1, parent_2)
+#
+#             """ mutation """
+#             for mutant in offspring:
+#                 if random.random() < mutation_threshold:
+#                     toolbox.mutate(mutant)
+#
+#             total_offspring = np.vstack((total_offspring, offspring[k]))
+#
+#     return total_offspring
 
 
 
@@ -287,7 +293,9 @@ for i in range(ini_g + 1, gens):
     # amount of offspring is not constant in this solution
 
     """ first do crossover """
-    offspring = crossover(pop)
+
+    """ IF YOU WANT TO TEST THE SECOND CROSSOVER, CHANGE THE NAME """
+    offspring = two_point_crossover_uniform_mutation(pop)
 
     """ then evaluate the fitness scores """
     fit_offspring = evaluate(offspring)
