@@ -117,14 +117,13 @@ def tournament_selection(population, population_fitness):
     third_fitness = population_fitness[random_val_3]
 
     """ change it later """
-    if np.random.uniform(-1.0, 1.0, 1)[0] <= 0.9:
+    if np.random.uniform(0, 1.0, 1)[0] <= 0.9:
         max_fitness = max([first_fitness, second_fitness, third_fitness])
 
     else:
         max_fitness = min([first_fitness, second_fitness, third_fitness])
 
     best_fitness_index = list(population_fitness).index(max_fitness)
-    print(best_fitness_index)
     return population[best_fitness_index]
 
 
@@ -166,8 +165,8 @@ def two_point_crossover_uniform_mutation(population_data):
         # mutation
         """ if it's too slow, think how to make it faster """
         for idx in range(offspring.shape[0]):
-            if np.random.uniform(-1.0, 1.0, 1)[0] <= mutation_threshold:
-                random_value = np.random.uniform(-1.0, 1.0, 1)
+            if np.random.uniform(0, 1.0, 1)[0] <= mutation_threshold:
+                random_value = np.random.uniform(0, 1.0, 1)
                 offspring[idx] = offspring[idx] + random_value
 
     return offspring
