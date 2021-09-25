@@ -14,9 +14,9 @@ MESSAGE: Pygame initialized for simulation.
 
 multiple mode: no
 
-enemies list: 1
+enemies list: 2
 
-current enemy: 1
+current enemy: 2
 
 player mode: ai
 
@@ -50,4 +50,4 @@ save logs: yes
 
 PARAMETER CHANGE: speed = normal
 
-RUN: run status: enemy: 1; fitness: 4.38487948315874; player life: 0; enemy life: 90.0; time: 101
+RUN: run status: enemy: 2; fitness: 91.84317193830047; player life: 74; enemy life: 0; time: 259
