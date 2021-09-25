@@ -32,7 +32,7 @@ toolbox.register("attribute", random.random)
 toolbox.register("individual", tools.initRepeat, creator.Individual,
                  toolbox.attribute, n=IND_SIZE)
 toolbox.register("population", tools.initRepeat, list, toolbox.individual)
-toolbox.register("mate", tools.cxUniform, indpb=0.1)
+toolbox.register("mate", tools.cxTwoPoint)
 toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=1, indpb=0.1)
 toolbox.register("select", tools.selTournament, tournsize=3)
 toolbox.register("evaluate", evaluate)
@@ -43,7 +43,7 @@ headless = True
 if headless:
     os.environ["SDL_VIDEODRIVER"] = "dummy"
 
-experiment_name = 'enemy_2_trial_1'
+experiment_name = '23_09_trial_2'
 if not os.path.exists(experiment_name):
     os.makedirs(experiment_name)
 
@@ -51,7 +51,7 @@ n_hidden_neurons = 10
 
 # initializes simulation in individual evolution mode, for single static enemy.
 env = Environment(experiment_name=experiment_name,
-                  enemies=[2],
+                  enemies=[3],
                   playermode="ai",
                   player_controller=player_controller(n_hidden_neurons),
                   enemymode="static",
@@ -72,12 +72,9 @@ n_vars = (env.get_num_sensors() + 1) * n_hidden_neurons + (n_hidden_neurons + 1)
 """ ATTENTION - everytime you change anything (besides gens), delete evoman_solstate file that is used here """
 dom_u = 1
 dom_l = -1
-
 npop = 20
 gens = 2
-crossover_threshold = 0.5
-mutation_threshold = 0.2
-
+mutation = 0.2
 last_best = 0
 
 
@@ -140,61 +137,35 @@ def limits(x):
         return x
 
 
-def one_point_crossover_uniform_mutation(population_data):
-    total_offspring = np.zeros((0, n_vars))
 
-    crossover_point = {np.uint8(n_vars / 4), np.uint8(n_vars - n_vars / 4)}
+crossover_threshold, mutation_threshold = 0.5, 0.2
 
+def crossover(population_data):
+    total_offspring = np.zeros((0, n_vars))  # tuple shape (0, num_of_sensors)
+
+    # this loop is from DEMO
     for p in range(0, population_data.shape[0], 2):
+
         parent_1 = tournament_selection(population_data, population_fitness)[::2]
         parent_2 = tournament_selection(population_data, population_fitness)[1::2]
 
-        n_offspring = np.random.randint(1, 3 + 1, 1)[0]
-        offspring = np.zeros((n_offspring, n_vars))
+        offspring = toolbox.mate(parent_1, parent_2)  # results in two new children in a tuple
+        offspring_1 = offspring[0]
+        offspring_2 = offspring[1]
 
-        for k in range(0, n_offspring):
+        """ combine them together?"""
+        one_offspring = np.hstack((offspring_1, offspring_2))
 
-            for m in crossover_point:
-                offspring[k, 0:m], offspring[k, m:] = single_point_crossover(parent_1, parent_2, m)
+        """ mutation """
+        if random.random() < mutation_threshold:
+            mutant_prior = toolbox.clone(one_offspring)
+            mutated_offspring = toolbox.mutate(one_offspring)[0]
+            total_offspring = np.vstack((total_offspring, mutated_offspring))
 
-            # mutation
-            for idx in range(offspring.shape[0]):
-                if np.random.uniform(-1.0, 1.0, 1) <= mutation_threshold:
-                    random_value = np.random.uniform(-1.0, 1.0, 1)
-                    offspring[k][idx] = offspring[k][idx] + random_value
-            total_offspring = np.vstack((total_offspring, offspring[k]))
+        else:
+            total_offspring = np.vstack((total_offspring, one_offspring))
 
-    return total_offspring
-
-
-def single_point_crossover(parent_1, parent_2, crossover_point):
-    child_1 = np.append(parent_1[:crossover_point], parent_2[crossover_point:])
-    child_2 = np.append(parent_2[:crossover_point], parent_1[crossover_point:])
-    return child_1, child_2
-
-
-def uniform_crossover_gausian_mutation(population_data):
-    total_offspring = np.zeros((0, n_vars))
-
-    for p in range(0, population_data.shape[0], 2):
-        parent_1 = tournament_selection(population_data, population_fitness)[::2]
-        parent_2 = tournament_selection(population_data, population_fitness)[1::2]
-
-        n_offspring = np.random.randint(1, 3 + 1, 1)[0]
-        offspring = np.zeros((n_offspring, n_vars))
-
-        for k in range(0, n_offspring):
-            if random.random() < crossover_threshold:
-                toolbox.mate(parent_1, parent_2)
-
-            """ mutation """
-            for mutant in offspring:
-                if random.random() < mutation_threshold:
-                    toolbox.mutate(mutant)
-
-            total_offspring = np.vstack((total_offspring, offspring[k]))
-
-    return total_offspring
+    return total_offspring  # has to be (x, 31) shape
 
 
 
