@@ -43,7 +43,7 @@ headless = True
 if headless:
     os.environ["SDL_VIDEODRIVER"] = "dummy"
 
-experiment_name = '23_09_trial_2'
+experiment_name = 'enemy_2_trial_1'
 if not os.path.exists(experiment_name):
     os.makedirs(experiment_name)
 
@@ -51,7 +51,7 @@ n_hidden_neurons = 10
 
 # initializes simulation in individual evolution mode, for single static enemy.
 env = Environment(experiment_name=experiment_name,
-                  enemies=[3],
+                  enemies=[2],
                   playermode="ai",
                   player_controller=player_controller(n_hidden_neurons),
                   enemymode="static",
@@ -72,8 +72,8 @@ n_vars = (env.get_num_sensors() + 1) * n_hidden_neurons + (n_hidden_neurons + 1)
 """ ATTENTION - everytime you change anything (besides gens), delete evoman_solstate file that is used here """
 dom_u = 1
 dom_l = -1
-npop = 20
-gens = 2
+npop = 100
+gens = 30
 mutation = 0.2
 last_best = 0
 
