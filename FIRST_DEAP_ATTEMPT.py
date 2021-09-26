@@ -39,6 +39,10 @@ headless = True
 if headless:
     os.environ["SDL_VIDEODRIVER"] = "dummy"
 
+""" CHOOSE THE NAME OF THE CROSSOVER """
+crossover_method = "uniform"
+#crossover_method = "two_points"
+
 """ CHANGE THE NAME TO ENEMY NUMBER, CROSSOVER NAME AND TRIAL """
 experiment_name = 'enemy_1_uniform_quick_test'
 if not os.path.exists(experiment_name):
@@ -156,7 +160,7 @@ def two_points_crossover(population_data):
         offspring[0] = parent_1.copy()
         offspring[1] = parent_2.copy()
 
-        total_offspring = mutation(offspring, total_offspring)
+        total_offspring = uniform_mutation(offspring, total_offspring)
 
     final_total_offspring = np.vstack(total_offspring)
     return final_total_offspring
@@ -168,7 +172,7 @@ def single_point_crossover(parent_1, parent_2, crossover_point):
     return parent_1_new, parent_2_new
 
 
-def mutation(offspring, total_offspring):
+def uniform_mutation(offspring, total_offspring):
     for idx in range(offspring.shape[0]):
         if np.random.uniform(0, 1.0, 1)[0] <= mutation_threshold:
             random_value = np.random.uniform(0, 1.0, 1)
@@ -196,7 +200,7 @@ def uniform_crossover(population_data):
             offspring[1] = parent_2.copy()
 
         """ mutation """
-        total_offspring = mutation(offspring, total_offspring)
+        total_offspring = uniform_mutation(offspring, total_offspring)
 
     final_total_offspring = np.vstack(total_offspring)
     return final_total_offspring
@@ -221,7 +225,7 @@ def two_point_crossover_deap(population_data):
         offspring[0] = parent_1.copy()
         offspring[1] = parent_2.copy()
 
-        total_offspring = mutation(offspring, total_offspring)
+        total_offspring = uniform_mutation(offspring, total_offspring)
 
     final_total_offspring = np.vstack(total_offspring)
     return final_total_offspring
@@ -300,13 +304,17 @@ not_improving = 0
 
 for i in range(ini_g + 1, generations):
     print(ini_g)
-    print("!!!!!!!!!!!! generation number {i}")
+    print(f"!!!!!!!!!!!! generation number {i}")
 
     # amount of offspring is not constant in this solution
 
     """ first do crossover """
 
-    """ IF YOU WANT TO TEST THE SECOND CROSSOVER, CHANGE THE NAME """
+    """ IF YOU WANT TO TEST THE SECOND CROSSOVER, CHANGE crossover_method"""
+    if crossover_method == "two_points":
+        offspring = two_points_crossover(whole_population)
+    elif crossover_method == "uniform":
+        offspring = uniform_crossover(whole_population)
     offspring = uniform_crossover(whole_population)
 
     """ then evaluate the fitness scores """
@@ -345,7 +353,7 @@ for i in range(ini_g + 1, generations):
 
     """ using mean to decide on additional steps for the diversity """
 
-    if current_mean < last_mean:
+    if current_mean <= last_mean:
         not_improving += 1
     else:
         last_mean = current_mean
