@@ -23,7 +23,7 @@ headless = True
 if headless:
     os.environ["SDL_VIDEODRIVER"] = "dummy"
 
-experiment_name = 'test_layers1'
+experiment_name = 'test_the_range_of_weights'
 if not os.path.exists(experiment_name):
     os.makedirs(experiment_name)
 
@@ -55,8 +55,8 @@ n_vars = (env.get_num_sensors() + 1) * n_hidden_neurons + (n_hidden_neurons + 1)
 
 dom_u = 1
 dom_l = -1
-npop = 20
-gens = 2
+npop = 100
+gens = 30
 mutation = 0.2
 last_best = 0
 
