@@ -93,12 +93,9 @@ def normalization(x, pop_fitness):
     denominator_check = max(pop_fitness) - min(pop_fitness)
 
     if denominator_check > 0:
-<<<<<<< HEAD
-        x_norm = (x - min(pop_fitness)) / (max(pop_fitness) - min(pop_fitness))
-=======
+
         x_norm = (x - min(population_fitness)) / (max(population_fitness) - min(population_fitness))
 
->>>>>>> 482a246271bdf1a83b89fa8bb43aac29c4afc3be
         if x_norm <= 0:
             x_norm = 0.0000000001
     else:
@@ -352,11 +349,7 @@ for i in range(ini_g + 1, generations):
         file_aux.write('\nNOT IMPROVING !!!!!!')
         file_aux.close()
 
-<<<<<<< HEAD
-        pop, population_fitness = remove_worst_and_add_diversity(pop, npop, population_fitness)
-=======
         whole_population, population_fitness = remove_worst_and_add_diversity(whole_population, population_length, population_fitness)
->>>>>>> 482a246271bdf1a83b89fa8bb43aac29c4afc3be
         not_improving = 0
 
     # saves results
