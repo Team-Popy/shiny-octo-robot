@@ -48,132 +48,54 @@ save logs: yes
 
 ########## Simulation state - END ###########
 
-RUN: run status: enemy: 2; fitness: -5.771441123130016; player life: 0; enemy life: 100; time: 321
+PARAMETER CHANGE: enemies = [2]
 
-RUN: run status: enemy: 2; fitness: -6.320768294250582; player life: 0; enemy life: 100; time: 556
+PARAMETER CHANGE: timeexpire = 3000
 
-RUN: run status: enemy: 2; fitness: -5.768320995793772; player life: 0; enemy life: 100; time: 320
+PARAMETER CHANGE: level = 2
 
-RUN: run status: enemy: 2; fitness: -5.402677381872279; player life: 0; enemy life: 100; time: 222
+PARAMETER CHANGE: enemyn = 2
+
+PARAMETER CHANGE: overturetime = 100
+
+PARAMETER CHANGE: playermode = ai
+
+PARAMETER CHANGE: enemymode = static
+
+PARAMETER CHANGE: contacthurt = player
+
+PARAMETER CHANGE: clockprec = low
+
+PARAMETER CHANGE: inputscoded = no
+
+PARAMETER CHANGE: randomini = yes
+
+PARAMETER CHANGE: multiplemode = no
+
+PARAMETER CHANGE: speed = fastest
+
+PARAMETER CHANGE: loadplayer = yes
+
+PARAMETER CHANGE: loadenemy = yes
+
+PARAMETER CHANGE: sound = off
+
+PARAMETER CHANGE: logs = on
+
+PARAMETER CHANGE: savelogs = yes
+
+MESSAGE: state has been loaded.
+
+RUN: run status: enemy: 2; fitness: 90.12482618476618; player life: 52; enemy life: 0; time: 160
 
 RUN: run status: enemy: 2; fitness: -5.783825182329737; player life: 0; enemy life: 100; time: 325
 
-RUN: run status: enemy: 2; fitness: 89.40150296873416; player life: 46; enemy life: 0; time: 181
+RUN: run status: enemy: 2; fitness: -5.220355825078324; player life: 0; enemy life: 100; time: 185
 
-RUN: run status: enemy: 2; fitness: 90.32482618476618; player life: 54; enemy life: 0; time: 160
+RUN: run status: enemy: 2; fitness: 67.030186700424; player life: 0; enemy life: 20.0; time: 144
 
-RUN: run status: enemy: 2; fitness: -5.823045895483019; player life: 0; enemy life: 100; time: 338
+RUN: run status: enemy: 2; fitness: 3.0946381519454293; player life: 0; enemy life: 90.0; time: 367
 
-RUN: run status: enemy: 2; fitness: -5.805134968916488; player life: 0; enemy life: 100; time: 332
+RUN: run status: enemy: 2; fitness: -5.780743515792329; player life: 0; enemy life: 100; time: 324
 
-RUN: run status: enemy: 2; fitness: 13.037155369740093; player life: 0; enemy life: 80.0; time: 143
-
-RUN: run status: enemy: 2; fitness: -4.955827057601261; player life: 0; enemy life: 100; time: 142
-
-RUN: run status: enemy: 2; fitness: -5.783825182329737; player life: 0; enemy life: 100; time: 325
-
-RUN: run status: enemy: 2; fitness: -5.7430031878094825; player life: 0; enemy life: 100; time: 312
-
-RUN: run status: enemy: 2; fitness: -5.886104031450156; player life: 0; enemy life: 100; time: 360
-
-RUN: run status: enemy: 2; fitness: -5.8944028342648505; player life: 0; enemy life: 100; time: 363
-
-RUN: run status: enemy: 2; fitness: -5.768320995793772; player life: 0; enemy life: 100; time: 320
-
-RUN: run status: enemy: 2; fitness: -5.783825182329737; player life: 0; enemy life: 100; time: 325
-
-RUN: run status: enemy: 2; fitness: -5.91350300563827; player life: 0; enemy life: 100; time: 370
-
-RUN: run status: enemy: 2; fitness: -5.805134968916488; player life: 0; enemy life: 100; time: 332
-
-RUN: run status: enemy: 2; fitness: 57.19486503108351; player life: 0; enemy life: 30.0; time: 332
-
-RUN: run status: enemy: 2; fitness: -5.805134968916488; player life: 0; enemy life: 100; time: 332
-
-RUN: run status: enemy: 2; fitness: -5.75890177387728; player life: 0; enemy life: 100; time: 317
-
-RUN: run status: enemy: 2; fitness: -5.793013608384144; player life: 0; enemy life: 100; time: 328
-
-RUN: run status: enemy: 2; fitness: 39.59282822853988; player life: 0; enemy life: 50.0; time: 223
-
-RUN: run status: enemy: 2; fitness: -5.814130531825066; player life: 0; enemy life: 100; time: 335
-
-RUN: run status: enemy: 2; fitness: 3.1055971657351495; player life: 0; enemy life: 90.0; time: 363
-
-RUN: run status: enemy: 2; fitness: -6.169610732491456; player life: 0; enemy life: 100; time: 478
-
-RUN: run status: enemy: 2; fitness: 65.99118681455741; player life: 0; enemy life: 20.0; time: 407
-
-RUN: run status: enemy: 2; fitness: -4.955827057601261; player life: 0; enemy life: 100; time: 142
-
-RUN: run status: enemy: 2; fitness: -5.805134968916488; player life: 0; enemy life: 100; time: 332
-
-RUN: run status: enemy: 2; fitness: -5.771441123130016; player life: 0; enemy life: 100; time: 321
-
-RUN: run status: enemy: 2; fitness: 3.6721238312104187; player life: 0; enemy life: 90.0; time: 206
-
-RUN: run status: enemy: 2; fitness: 39.216174817670264; player life: 0; enemy life: 50.0; time: 325
-
-RUN: run status: enemy: 2; fitness: -5.771441123130016; player life: 0; enemy life: 100; time: 321
-
-RUN: run status: enemy: 2; fitness: -6.169610732491456; player life: 0; enemy life: 100; time: 478
-
-RUN: run status: enemy: 2; fitness: -5.857933154483459; player life: 0; enemy life: 100; time: 350
-
-RUN: run status: enemy: 2; fitness: -5.771441123130016; player life: 0; enemy life: 100; time: 321
-
-RUN: run status: enemy: 2; fitness: 30.62010264645954; player life: 0; enemy life: 60.0; time: 217
-
-RUN: run status: enemy: 2; fitness: 89.16355803717006; player life: 44; enemy life: 0; time: 188
-
-RUN: run status: enemy: 2; fitness: 3.1001026464175085; player life: 0; enemy life: 90.0; time: 365
-
-RUN: run status: enemy: 2; fitness: 89.79605369405454; player life: 48; enemy life: 0; time: 149
-
-MESSAGE: state has been saved to files.
-
-########## Simulation state - INI ###########
-
-# solutions # : LOADED 
-
-# sensors # : 20
-
- ------  parameters ------  
-
-# contact hurt (training agent) # : player
-
-multiple mode: no
-
-enemies list: 2
-
-current enemy: 2
-
-player mode: ai
-
-enemy mode: static
-
-level: 2
-
-clock precision: low
-
-inputs coded: no
-
-random initialization: yes
-
-expiration time: 3000
-
-speed: fastest
-
-load player: yes
-
-load enemy: yes
-
-sound: off
-
-overture time: 100
-
-logs: on
-
-save logs: yes
-
-########## Simulation state - END ###########
+RUN: run status: enemy: 2; fitness: 30.11112204166712; player life: 0; enemy life: 60.0; time: 361

@@ -43,7 +43,7 @@ if headless:
     os.environ["SDL_VIDEODRIVER"] = "dummy"
 
 """ CHANGE THE NAME TO ENEMY NUMBER, CROSSOVER NAME AND TRIAL """
-experiment_name = 'enemy_3_uniform_crossover_4'
+experiment_name = 'enemy_2_uniform_crossover_quick_test'
 if not os.path.exists(experiment_name):
     os.makedirs(experiment_name)
 
@@ -51,7 +51,7 @@ n_hidden_neurons = 10
 
 # initializes simulation in individual evolution mode, for single static enemy.
 env = Environment(experiment_name=experiment_name,
-                  enemies=[3],
+                  enemies=[2],
                   playermode="ai",
                   player_controller=player_controller(n_hidden_neurons),
                   enemymode="static",
@@ -64,7 +64,7 @@ env.state_to_log()  # checks environment state
 ini = time.time()  # sets time marker
 # genetic algorithm params
 """ CHANGE IT TO TEST TO TEST THE RESULTS """
-run_mode = 'train'  # train or test
+run_mode = 'test'  # train or test
 
 # todo: understand this formula why are there these numbers
 # number of weights for multilayer with 10 hidden neurons
@@ -74,8 +74,8 @@ n_vars = (env.get_num_sensors() + 1) * n_hidden_neurons + (n_hidden_neurons + 1)
 lower_limit = -1
 upper_limit = 1
 
-npop = 100
-gens = 30
+npop = 40
+gens = 10
 crossover_threshold = 0.5
 mutation_threshold = 0.2
 
@@ -206,7 +206,6 @@ def uniform_crossover_gausian_mutation(population_data):
 
         """ mutation """
         if random.random() < mutation_threshold:
-            mutant_prior = toolbox.clone(one_offspring)
             mutated_offspring = toolbox.mutate(one_offspring)[0]
             total_offspring = np.vstack((total_offspring, mutated_offspring))
 
@@ -349,7 +348,7 @@ for i in range(ini_g + 1, gens):
         file_aux.write('\nNOT IMPROVING !!!!!!')
         file_aux.close()
 
-        pop, population_fitness = remove_worst_and_add_diversity(pop, population_fitness, npop)
+        pop, population_fitness = remove_worst_and_add_diversity(pop, npop, population_fitness)
         not_improving = 0
 
     # saves results
