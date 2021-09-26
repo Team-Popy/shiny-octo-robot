@@ -52,7 +52,7 @@ n_hidden_neurons = 10
 
 # initializes simulation in individual evolution mode, for single static enemy.
 env = Environment(experiment_name=experiment_name,
-                  enemies=[1],
+                  enemies=[2],
                   playermode="ai",
                   player_controller=player_controller(n_hidden_neurons),
                   enemymode="static",
@@ -75,8 +75,8 @@ n_vars = (env.get_num_sensors() + 1) * n_hidden_neurons + (n_hidden_neurons + 1)
 lower_limit = -1
 upper_limit = 1
 
-npop = 100
-gens = 30
+population_length = 100
+generations = 5
 crossover_threshold = 0.5
 mutation_threshold = 0.2
 
@@ -95,6 +95,9 @@ def normalization(x, population_fitness):
 
     if denominator_check > 0:
         x_norm = (x - min(population_fitness)) / (max(population_fitness) - min(population_fitness))
+
+        if x_norm <= 0:
+            x_norm = 0.0000000001
     else:
         x_norm = 0.0000000001
 
@@ -133,7 +136,7 @@ def tournament_selection(population, population_fitness):
 
 
 """ WEIGHTS INITIALIZATION """
-init_population = np.random.uniform(lower_limit, upper_limit, (npop, n_vars))
+init_population = np.random.uniform(lower_limit, upper_limit, (population_length, n_vars))
 
 """ Make the weight limited """
 
@@ -239,13 +242,13 @@ if not os.path.exists(experiment_name + '/evoman_solstate'):
 
     print('\nNEW EVOLUTION\n')
 
-    pop = np.random.uniform(lower_limit, upper_limit, (npop, n_vars))
-    population_fitness = evaluate(pop)
+    whole_population = np.random.uniform(lower_limit, upper_limit, (population_length, n_vars))
+    population_fitness = evaluate(whole_population)
     best = np.argmax(population_fitness)
     mean = np.mean(population_fitness)
     std = np.std(population_fitness)
     ini_g = 0
-    solutions = [pop, population_fitness]
+    solutions = [whole_population, population_fitness]
     env.update_solutions(solutions)
 
 else:
@@ -253,7 +256,7 @@ else:
     print('\nCONTINUING EVOLUTION\n')
 
     env.load_state()
-    pop = env.solutions[0]
+    whole_population = env.solutions[0]
     population_fitness = env.solutions[1]
 
     best = np.argmax(population_fitness)
@@ -276,12 +279,12 @@ file_aux.write(
         round(std, 6)))
 file_aux.close()
 
-# evolution
+# evolution ********************************************************
 
 last_mean = np.mean(population_fitness)
 not_improving = 0
 
-for i in range(ini_g + 1, gens):
+for i in range(ini_g + 1, generations):
     print(ini_g)
     print(f"!!!!!!!!!!!! generation number {i}")
 
@@ -290,39 +293,39 @@ for i in range(ini_g + 1, gens):
     """ first do crossover """
 
     """ IF YOU WANT TO TEST THE SECOND CROSSOVER, CHANGE THE NAME """
-    offspring = two_point_crossover_uniform_mutation(pop)
+    offspring = two_point_crossover_uniform_mutation(whole_population)
 
     """ then evaluate the fitness scores """
     fit_offspring = evaluate(offspring)
 
     """ combine old population with the offspring """
-    pop = np.vstack((pop, offspring))
+    whole_population = np.vstack((whole_population, offspring))
 
     """ it adds ndarrays horizontally """
     population_fitness = np.append(population_fitness, fit_offspring)
 
     """ survival selection """
-
-    index_threshold = np.random.uniform(0.5, 0.8, 1)[0]
-    best_amount = int(npop * index_threshold)
-    worst_amount = int(npop - best_amount)
+    index_threshold = np.random.uniform(0.05, 0.15, 1)[0]
+    best_amount = int(population_length * index_threshold)
+    rest_offspring = int(population_length - best_amount)
 
     best_fitness_scores_indexes = np.argpartition(population_fitness, -best_amount)[-best_amount:]
-    worst_fitness_scores_indexes = np.argpartition(population_fitness, worst_amount)[:worst_amount]
-    final_indexes = np.hstack((best_fitness_scores_indexes, worst_fitness_scores_indexes))
 
-    """ normalizing - should we use this part of code? """
-    # population_fitness_cp = population_fitness
-    # population_fitness_norm = np.array(list(map(lambda y: norm(y, population_fitness_cp),
-    #                                  population_fitness)))  # avoiding negative probabilities, as fitness is ranges from negative numbers
-    # probs = (population_fitness_norm) / (population_fitness_norm).sum()
-    #
-    # chosen = np.random.choice(pop.shape[0], npop, p=probs, replace=False)
-    # chosen = np.append(chosen[1:], best)
+    population_fitness_copy= population_fitness.copy()
+    population_fitness_normalized = np.array(list(map(lambda y:normalization(y,population_fitness_copy),population_fitness)))
 
-    """ update population and fitness scores - OUR CURRENT SURVIVAL SELECTION METHOD """
-    pop = pop[final_indexes]
+    probability = (population_fitness_normalized) / (population_fitness_normalized).sum()
+    randomness_population = np.random.choice(whole_population.shape[0], rest_offspring, p = probability, replace=False)
+
+    final_indexes = np.hstack((randomness_population, best_fitness_scores_indexes))
+
+    """ OUR CURRENT SURVIVAL SELECTION METHOD """
+    whole_population = whole_population[final_indexes]
     population_fitness = population_fitness[final_indexes]
+
+
+    #########################################################################################################
+
 
     """ statistics about the last fitness """
     best = np.argmax(population_fitness)
@@ -342,7 +345,7 @@ for i in range(ini_g + 1, gens):
         file_aux.write('\nNOT IMPROVING !!!!!!')
         file_aux.close()
 
-        pop, population_fitness = remove_worst_and_add_diversity(pop, population_fitness, npop)
+        whole_population, population_fitness = remove_worst_and_add_diversity(whole_population, population_length, population_fitness)
         not_improving = 0
 
     # saves results
@@ -361,10 +364,10 @@ for i in range(ini_g + 1, gens):
     file_aux.close()
 
     # saves file with the best solution
-    np.savetxt(experiment_name + '/best.txt', pop[best])
+    np.savetxt(experiment_name + '/best.txt', whole_population[best])
 
     # saves simulation state
-    solutions = [pop, population_fitness]
+    solutions = [whole_population, population_fitness]
     env.update_solutions(solutions)
     env.save_state()
 
