@@ -43,7 +43,7 @@ if headless:
     os.environ["SDL_VIDEODRIVER"] = "dummy"
 
 """ CHANGE THE NAME TO ENEMY NUMBER, CROSSOVER NAME AND TRIAL """
-experiment_name = 'enemy_2_uniform_crossover_quick_test'
+experiment_name = 'enemy_1_uniform_quick_test'
 if not os.path.exists(experiment_name):
     os.makedirs(experiment_name)
 
@@ -51,7 +51,7 @@ n_hidden_neurons = 10
 
 # initializes simulation in individual evolution mode, for single static enemy.
 env = Environment(experiment_name=experiment_name,
-                  enemies=[2],
+                  enemies=[1],
                   playermode="ai",
                   player_controller=player_controller(n_hidden_neurons),
                   enemymode="static",
@@ -64,7 +64,7 @@ env.state_to_log()  # checks environment state
 ini = time.time()  # sets time marker
 # genetic algorithm params
 """ CHANGE IT TO TEST TO TEST THE RESULTS """
-run_mode = 'test'  # train or test
+run_mode = 'train'  # train or test
 
 # todo: understand this formula why are there these numbers
 # number of weights for multilayer with 10 hidden neurons
@@ -144,7 +144,7 @@ def limit_the_weights(weight):
         return weight
 
 
-def two_point_crossover_uniform_mutation(population_data):
+def two_points_crossover(population_data):
 
     first_point = int(np.random.uniform(0, n_vars, 1)[0])
     second_point = int(np.random.uniform(0, n_vars, 1)[0])
@@ -165,16 +165,7 @@ def two_point_crossover_uniform_mutation(population_data):
         offspring[1] = parent_2.copy()
         # mutation
         """ if it's too slow, think how to make it faster """
-        for idx in range(offspring.shape[0]):
-            if np.random.uniform(0, 1.0, 1)[0] <= mutation_threshold:
-                random_value = np.random.uniform(0, 1.0, 1)
-                offspring[idx] = offspring[idx] + random_value
-        offspring[0] = np.array(list(map(lambda y: limit_the_weights(y), offspring[0])))
-        offspring[1] = np.array(list(map(lambda y: limit_the_weights(y), offspring[1])))
-
-        total_offspring.append(offspring[0])
-        total_offspring.append(offspring[1])
-
+        total_offspring = mutation(offspring, total_offspring)
 
     final_total_offspring = np.vstack(total_offspring)
     return final_total_offspring
@@ -186,39 +177,43 @@ def single_point_crossover(parent_1, parent_2, crossover_point):
     return parent_1_new, parent_2_new
 
 
-def uniform_crossover_gausian_mutation(population_data):
-    total_offspring = np.zeros((0, n_vars))  # tuple shape (0, num_of_sensors)
+def uniform_crossover(population_data):
+    total_offspring = []  # tuple shape (0, num_of_sensors)
 
     # this loop is from DEMO
-    for p in range(0, population_data.shape[0]):
+    for p in range(0, population_data.shape[0], 2):
         parent_1, parent_2 = tournament_selection(population_data, population_fitness)
-        parent_1 = parent_1[::2]
-        parent_2 = parent_2[1::2]
 
-        one_offspring = np.zeros((1, n_vars))
+        offspring = np.zeros((2, n_vars))
         """ crossover """
         if random.random() < crossover_threshold:
-            offspring = toolbox.mate(parent_1, parent_2)  # results in two new children in a tuple
-            offspring_1 = offspring[0]
-            offspring_2 = offspring[1]
+            parent_1, parent_2 = toolbox.mate(parent_1, parent_2)
 
-            """ combine them together?"""
-            one_offspring = np.hstack((offspring_1, offspring_2))
+            offspring[0] = parent_1.copy()
+            offspring[1] = parent_2.copy()
 
         """ mutation """
-        if random.random() < mutation_threshold:
-            mutated_offspring = toolbox.mutate(one_offspring)[0]
-            total_offspring = np.vstack((total_offspring, mutated_offspring))
+        total_offspring = mutation(offspring, total_offspring)
 
-        else:
-            total_offspring = np.vstack((total_offspring, one_offspring))
+    final_total_offspring = np.vstack(total_offspring)
+    return final_total_offspring
 
-    """ OUR PART ENDS """
+
+def mutation(offspring, total_offspring):
+    for idx in range(offspring.shape[0]):
+        if np.random.uniform(0, 1.0, 1)[0] <= mutation_threshold:
+            random_value = np.random.uniform(0, 1.0, 1)
+            offspring[idx] = offspring[idx] + random_value
+    offspring[0] = np.array(list(map(lambda y: limit_the_weights(y), offspring[0])))
+    offspring[1] = np.array(list(map(lambda y: limit_the_weights(y), offspring[1])))
+    total_offspring.append(offspring[0])
+    total_offspring.append(offspring[1])
     return total_offspring
+
 
 """ SEE IF IT'S BETTER """
 def remove_worst_and_add_diversity(modify_pop, pop_length, population_fit):
-    remove_n_samples = int(pop_length/2)
+    remove_n_samples = int(pop_length / 2)
     worst_fitness_scores_indexes = np.argpartition(population_fit, remove_n_samples)[:remove_n_samples]
     modify_pop = np.delete(modify_pop, worst_fitness_scores_indexes, 0)
 
@@ -226,8 +221,9 @@ def remove_worst_and_add_diversity(modify_pop, pop_length, population_fit):
 
     modify_pop = np.vstack((modify_pop, new_random_samples))
 
-    return modify_pop, population_fit
+    new_population_fit = evaluate(modify_pop)
 
+    return modify_pop, new_population_fit
 
 # todo: I think we can have it? but we can ask
 # todo: when to change to train and when to test
@@ -298,7 +294,7 @@ for i in range(ini_g + 1, generations):
     """ first do crossover """
 
     """ IF YOU WANT TO TEST THE SECOND CROSSOVER, CHANGE THE NAME """
-    offspring = uniform_crossover_gausian_mutation(whole_population)
+    offspring = uniform_crossover(whole_population)
 
     """ then evaluate the fitness scores """
     fit_offspring = evaluate(offspring)
@@ -336,11 +332,12 @@ for i in range(ini_g + 1, generations):
     best = np.argmax(population_fitness)
     std = np.std(population_fitness)
     current_mean = np.mean(population_fitness)
+    mean = np.mean(population_fitness)
 
 
     """ using mean to decide on additional steps for the diversity """
 
-    if current_mean <= last_mean:
+    if current_mean < last_mean:
         not_improving += 1
     else:
         last_mean = current_mean
