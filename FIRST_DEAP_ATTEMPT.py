@@ -44,7 +44,7 @@ if headless:
     os.environ["SDL_VIDEODRIVER"] = "dummy"
 
 """ CHANGE THE NAME TO ENEMY NUMBER, CROSSOVER NAME AND TRIAL """
-experiment_name = 'enemy_1_new_survival'
+experiment_name = 'enemy_1_new_survival_random_crossover'
 if not os.path.exists(experiment_name):
     os.makedirs(experiment_name)
 
@@ -89,25 +89,20 @@ def simulation(environment, x):
     return fitness
 
 
-############################################ CHECK
-def normalization(x, population_fitness):
-    denominator_check = max(population_fitness) - min(population_fitness)
+def normalization(x, pop_fitness):
+    denominator_check = max(pop_fitness) - min(pop_fitness)
 
     if denominator_check > 0:
+
         x_norm = (x - min(population_fitness)) / (max(population_fitness) - min(population_fitness))
 
         if x_norm <= 0:
             x_norm = 0.0000000001
     else:
         x_norm = 0.0000000001
-
     return x_norm
 
 
-########################################### CHECK
-
-
-################################################################# CHECK
 def tournament_selection(population, population_fitness):
     # choosing 3 individuals from the population at random
     random_list = random.sample(range(0, population.shape[0]), 4)
@@ -151,7 +146,10 @@ def limit_the_weights(weight):
 
 
 def two_point_crossover_uniform_mutation(population_data):
-    crossover_point = [np.uint8(n_vars / 4), np.uint8(n_vars - n_vars / 4)]
+
+    first_point = int(np.random.uniform(0, n_vars, 1)[0])
+    second_point = int(np.random.uniform(0, n_vars, 1)[0])
+    crossover_point = [first_point, second_point]
     total_offspring = []
 
     for p in range(0, population_data.shape[0], 2):
@@ -190,33 +188,38 @@ def single_point_crossover(parent_1, parent_2, crossover_point):
 
 
 # def uniform_crossover_gausian_mutation(population_data):
-#     total_offspring = np.zeros((0, n_vars))
+#     total_offspring = np.zeros((0, n_vars))  # tuple shape (0, num_of_sensors)
 #
-#     for p in range(0, population_data.shape[0], 2):
-#         parent_1 = tournament_selection(population_data, population_fitness)[::2]
-#         parent_2 = tournament_selection(population_data, population_fitness)[1::2]
+#     # this loop is from DEMO
+#     for p in range(0, population_data.shape[0]):
+#         parent_1, parent_2 = tournament_selection(population_data, population_fitness)
+#         parent_1 = parent_1[::2]
+#         parent_2 = parent_2[1::2]
 #
-#         n_offspring = np.random.randint(1, 3 + 1, 1)[0]
-#         offspring = np.zeros((n_offspring, n_vars))
+#         one_offspring = np.zeros((1, n_vars))
+#         """ crossover """
+#         if random.random() < crossover_threshold:
+#             offspring = toolbox.mate(parent_1, parent_2)  # results in two new children in a tuple
+#             offspring_1 = offspring[0]
+#             offspring_2 = offspring[1]
 #
-#         for k in range(0, n_offspring):
-#             if random.random() < crossover_threshold:
-#                 toolbox.mate(parent_1, parent_2)
+#             """ combine them together?"""
+#             one_offspring = np.hstack((offspring_1, offspring_2))
 #
-#             """ mutation """
-#             for mutant in offspring:
-#                 if random.random() < mutation_threshold:
-#                     toolbox.mutate(mutant)
+#         """ mutation """
+#         if random.random() < mutation_threshold:
+#             mutated_offspring = toolbox.mutate(one_offspring)[0]
+#             total_offspring = np.vstack((total_offspring, mutated_offspring))
 #
-#             total_offspring = np.vstack((total_offspring, offspring[k]))
-#
-#     return total_offspring
+#         else:
+#             total_offspring = np.vstack((total_offspring, one_offspring))
 
 
+""" SEE IF IT'S BETTER """
 def remove_worst_and_add_diversity(modify_pop, pop_length, population_fit):
-    remove_n_samples = int(pop_length/6)
+    remove_n_samples = int(pop_length/2)
     worst_fitness_scores_indexes = np.argpartition(population_fit, remove_n_samples)[:remove_n_samples]
-    modify_pop = np.delete(modify_pop, list(worst_fitness_scores_indexes))
+    modify_pop = np.delete(modify_pop, worst_fitness_scores_indexes, 0)
 
     new_random_samples = np.random.uniform(lower_limit, upper_limit, (remove_n_samples, n_vars))
 
@@ -331,6 +334,7 @@ for i in range(ini_g + 1, generations):
     best = np.argmax(population_fitness)
     std = np.std(population_fitness)
     current_mean = np.mean(population_fitness)
+
 
     """ using mean to decide on additional steps for the diversity """
 
