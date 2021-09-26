@@ -44,7 +44,7 @@ if headless:
     os.environ["SDL_VIDEODRIVER"] = "dummy"
 
 """ CHANGE THE NAME TO ENEMY NUMBER, CROSSOVER NAME AND TRIAL """
-experiment_name = 'enemy_1_one_point_crossover_2'
+experiment_name = 'enemy_1_one_point_crossover_selection_2'
 if not os.path.exists(experiment_name):
     os.makedirs(experiment_name)
 
@@ -52,7 +52,7 @@ n_hidden_neurons = 10
 
 # initializes simulation in individual evolution mode, for single static enemy.
 env = Environment(experiment_name=experiment_name,
-                  enemies=[1],
+                  enemies=[2],
                   playermode="ai",
                   player_controller=player_controller(n_hidden_neurons),
                   enemymode="static",
@@ -72,8 +72,8 @@ run_mode = 'train'  # train or test
 n_vars = (env.get_num_sensors() + 1) * n_hidden_neurons + (n_hidden_neurons + 1) * 5
 
 """ ATTENTION - everytime you change anything (besides gens), delete evoman_solstate file that is used here """
-dom_u = 1
-dom_l = -1
+upper_limit = 1
+lower_limit = -1
 
 npop = 100
 gens = 30
@@ -107,52 +107,55 @@ def normalization(x, population_fitness):
 ################################################################# CHECK
 def tournament_selection(population, population_fitness):
     # choosing 3 individuals from the population at random
-    random_list = random.sample(range(0, population.shape[0]), 3)
+    random_list = random.sample(range(0, population.shape[0]), 4)
     random_val_1 = random_list[0]
     random_val_2 = random_list[1]
     random_val_3 = random_list[2]
+    random_val_4 = random_list[3]
 
     first_fitness = population_fitness[random_val_1]
     second_fitness = population_fitness[random_val_2]
     third_fitness = population_fitness[random_val_3]
+    fourth_fitness = population_fitness[random_val_4]
 
-    """ change it later """
-    if np.random.uniform(0, 1.0, 1)[0] <= 0.9:
-        max_fitness = max([first_fitness, second_fitness, third_fitness])
+    sorted_fitness = [first_fitness, second_fitness, third_fitness, fourth_fitness]
+    sorted_fitness.sort(reverse=True)
+    parent_1_fitness = sorted_fitness[0]
+    parent_2_fitness = sorted_fitness[1]
 
-    else:
-        max_fitness = min([first_fitness, second_fitness, third_fitness])
+    parent_1_index = list(population_fitness).index(parent_1_fitness)
+    parent_2_index = list(population_fitness).index(parent_2_fitness)
 
-    best_fitness_index = list(population_fitness).index(max_fitness)
-    return population[best_fitness_index]
+    return population[parent_1_index], population[parent_2_index]
 
 
 ################################################################# CHECK
 
 
 # CODE FROM DEMO
-init_population = np.random.uniform(dom_l, dom_u, (npop, n_vars))
+init_population = np.random.uniform(lower_limit, upper_limit, (npop, n_vars))
 
 
 # todo: ask if we can use it
 
 # limits FROM DEMO
-def limits(x):
-    if x > dom_u:
-        return dom_u
-    elif x < dom_l:
-        return dom_l
+def limit_the_weights(weight):
+    if weight > upper_limit:
+        return upper_limit
+    elif weight < lower_limit:
+        return lower_limit
     else:
-        return x
+        return weight
 
 
 def two_point_crossover_uniform_mutation(population_data):
-    offspring = np.zeros((2, n_vars))
+
     crossover_point = [np.uint8(n_vars / 4), np.uint8(n_vars - n_vars / 4)]
+    total_offspring = []
 
     for p in range(0, population_data.shape[0], 2):
-        parent_1 = tournament_selection(population_data, population_fitness)
-        parent_2 = tournament_selection(population_data, population_fitness)
+        offspring = np.zeros((2, n_vars))
+        parent_1, parent_2 = tournament_selection(population_data, population_fitness)
 
         if np.array_equal(parent_1, parent_2):
             parent_1 = toolbox.mutate(parent_1)[0]
@@ -169,7 +172,15 @@ def two_point_crossover_uniform_mutation(population_data):
                 random_value = np.random.uniform(0, 1.0, 1)
                 offspring[idx] = offspring[idx] + random_value
 
-    return offspring
+        offspring[0]=np.array(list(map(lambda y: limit_the_weights(y), offspring[0])))
+        offspring[1]=np.array(list(map(lambda y: limit_the_weights(y), offspring[1])))
+
+
+        total_offspring.append(offspring[0])
+        total_offspring.append(offspring[1])
+
+    final_total_offspring = np.vstack(total_offspring)
+    return final_total_offspring
 
 
 def single_point_crossover(parent_1, parent_2, crossover_point):
@@ -216,7 +227,7 @@ def doomsday(pop, population_fitness):
         for j in range(0, n_vars):
             pro = np.random.uniform(0, 1)
             if np.random.uniform(0, 1) <= pro:
-                pop[o][j] = np.random.uniform(dom_l, dom_u)  # random dna, uniform dist.
+                pop[o][j] = np.random.uniform(lower_limit, upper_limit)  # random dna, uniform dist.
             else:
                 pop[o][j] = pop[order[-1:]][0][j]  # dna from best
 
@@ -242,7 +253,7 @@ if not os.path.exists(experiment_name + '/evoman_solstate'):
 
     print('\nNEW EVOLUTION\n')
 
-    pop = np.random.uniform(dom_l, dom_u, (npop, n_vars))
+    pop = np.random.uniform(lower_limit, upper_limit, (npop, n_vars))
     population_fitness = evaluate(pop)
     best = np.argmax(population_fitness)
     mean = np.mean(population_fitness)
@@ -280,7 +291,7 @@ file_aux.write(
         round(std, 6)))
 file_aux.close()
 
-# evolution
+# evolution ********************************************************
 
 last_sol = population_fitness[best]
 notimproved = 0
@@ -306,21 +317,29 @@ for i in range(ini_g + 1, gens):
     population_fitness = np.append(population_fitness, fit_offspring)
 
     """ survival selection """
-    best_fitness_scores_indexes = np.argpartition(population_fitness, -npop)[-npop:]
+    index_threshold = np.random.uniform(0.5,0.8,1)[0]
+    best_amount = int(npop * index_threshold)
+    worst_amount = int(npop -best_amount)
+
+    best_fitness_scores_indexes = np.argpartition(population_fitness, -best_amount)[-best_amount:]
+    worst_fitness_scores_indexes = np.argpartition(population_fitness, worst_amount)[:worst_amount]
+    final_indexes = np.hstack((best_fitness_scores_indexes,worst_fitness_scores_indexes))
 
     """ normalizing - should we use this part of code? """
     # population_fitness_cp = population_fitness
-    # population_fitness_norm = np.array(list(map(lambda y: norm(y, population_fitness_cp),
-    #                                  population_fitness)))  # avoiding negative probabilities, as fitness is ranges from negative numbers
+    # population_fitness_norm = np.array(list(map(lambda y: normalization(y, population_fitness_cp),population_fitness)))
+    # avoiding negative probabilities, as fitness is ranges from negative numbers
+
     # probs = (population_fitness_norm) / (population_fitness_norm).sum()
-    #
+
     # chosen = np.random.choice(pop.shape[0], npop, p=probs, replace=False)
     # chosen = np.append(chosen[1:], best)
 
-    """ update population and fitness scores - OUR CURRENT SURVIVAL SELECTION METHOD """
-    pop = pop[best_fitness_scores_indexes]
-    population_fitness = population_fitness[best_fitness_scores_indexes]
+    ########################################################################### CHECK
 
+    """ update population and fitness scores - OUR CURRENT SURVIVAL SELECTION METHOD """
+    pop = pop[final_indexes]
+    population_fitness = population_fitness[final_indexes]
 
     # todo: how to preserve diversity - Alicja
     # if best_sol <= last_sol:
