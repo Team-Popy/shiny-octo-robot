@@ -14,9 +14,9 @@ MESSAGE: Pygame initialized for simulation.
 
 multiple mode: no
 
-enemies list: 2
+enemies list: 3
 
-current enemy: 2
+current enemy: 3
 
 player mode: ai
 
@@ -48,13 +48,13 @@ save logs: yes
 
 ########## Simulation state - END ###########
 
-PARAMETER CHANGE: enemies = [2]
+PARAMETER CHANGE: enemies = [3]
 
 PARAMETER CHANGE: timeexpire = 3000
 
 PARAMETER CHANGE: level = 2
 
-PARAMETER CHANGE: enemyn = 2
+PARAMETER CHANGE: enemyn = 3
 
 PARAMETER CHANGE: overturetime = 100
 
@@ -85,17 +85,3 @@ PARAMETER CHANGE: logs = on
 PARAMETER CHANGE: savelogs = yes
 
 MESSAGE: state has been loaded.
-
-RUN: run status: enemy: 2; fitness: 90.12482618476618; player life: 52; enemy life: 0; time: 160
-
-RUN: run status: enemy: 2; fitness: -5.783825182329737; player life: 0; enemy life: 100; time: 325
-
-RUN: run status: enemy: 2; fitness: -5.220355825078324; player life: 0; enemy life: 100; time: 185
-
-RUN: run status: enemy: 2; fitness: 67.030186700424; player life: 0; enemy life: 20.0; time: 144
-
-RUN: run status: enemy: 2; fitness: 3.0946381519454293; player life: 0; enemy life: 90.0; time: 367
-
-RUN: run status: enemy: 2; fitness: -5.780743515792329; player life: 0; enemy life: 100; time: 324
-
-RUN: run status: enemy: 2; fitness: 30.11112204166712; player life: 0; enemy life: 60.0; time: 361

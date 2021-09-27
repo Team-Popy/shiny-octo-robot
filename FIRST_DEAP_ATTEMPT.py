@@ -5,8 +5,7 @@ from environment import Environment
 from demo_controller import player_controller
 import time
 import numpy as np
-from math import fabs, sqrt
-import glob, os
+import os
 from deap import base, creator
 import random
 from deap import tools
@@ -40,8 +39,12 @@ headless = True
 if headless:
     os.environ["SDL_VIDEODRIVER"] = "dummy"
 
+""" CHOOSE THE NAME OF THE CROSSOVER """
+crossover_method = "uniform"
+#crossover_method = "two_points"
+
 """ CHANGE THE NAME TO ENEMY NUMBER, CROSSOVER NAME AND TRIAL """
-experiment_name = 'enemy_1_tournament_best_and_worst'
+experiment_name = 'enemy_1_uniform_quick_test'
 if not os.path.exists(experiment_name):
     os.makedirs(experiment_name)
 
@@ -71,8 +74,8 @@ n_vars = (env.get_num_sensors() + 1) * n_hidden_neurons + (n_hidden_neurons + 1)
 lower_limit = -1
 upper_limit = 1
 
-population_length = 100
-generations = 30
+population_length = 40
+generations = 10
 crossover_threshold = 0.5
 mutation_threshold = 0.2
 
@@ -136,8 +139,8 @@ def limit_the_weights(weight):
         return weight
 
 
-def two_point_crossover_uniform_mutation(population_data):
-    """ IF ANYTHING CHANGES - CHANGE THE DOCUMENTATION """
+def two_points_crossover(population_data):
+
     first_point = int(np.random.uniform(0, n_vars, 1)[0])
     second_point = int(np.random.uniform(0, n_vars, 1)[0])
     crossover_point = [first_point, second_point]
@@ -156,22 +159,54 @@ def two_point_crossover_uniform_mutation(population_data):
 
         offspring[0] = parent_1.copy()
         offspring[1] = parent_2.copy()
-        # mutation
-        for idx in range(offspring.shape[0]):
-            if np.random.uniform(0, 1.0, 1)[0] <= mutation_threshold:
-                random_value = np.random.uniform(0, 1.0, 1)
-                offspring[idx] = offspring[idx] + random_value
-        offspring[0] = np.array(list(map(lambda y: limit_the_weights(y), offspring[0])))
-        offspring[1] = np.array(list(map(lambda y: limit_the_weights(y), offspring[1])))
 
-        total_offspring.append(offspring[0])
-        total_offspring.append(offspring[1])
+        total_offspring = uniform_mutation(offspring, total_offspring)
 
     final_total_offspring = np.vstack(total_offspring)
     return final_total_offspring
 
 
-def two_point_crossover_DEAP(population_data):
+def single_point_crossover(parent_1, parent_2, crossover_point):
+    parent_1_new = np.append(parent_1[:crossover_point], parent_2[crossover_point:])
+    parent_2_new = np.append(parent_2[:crossover_point], parent_1[crossover_point:])
+    return parent_1_new, parent_2_new
+
+
+def uniform_mutation(offspring, total_offspring):
+    for idx in range(offspring.shape[0]):
+        if np.random.uniform(0, 1.0, 1)[0] <= mutation_threshold:
+            random_value = np.random.uniform(0, 1.0, 1)
+            offspring[idx] = offspring[idx] + random_value
+    offspring[0] = np.array(list(map(lambda y: limit_the_weights(y), offspring[0])))
+    offspring[1] = np.array(list(map(lambda y: limit_the_weights(y), offspring[1])))
+    total_offspring.append(offspring[0])
+    total_offspring.append(offspring[1])
+    return total_offspring
+
+
+def uniform_crossover(population_data):
+    total_offspring = []  # tuple shape (0, num_of_sensors)
+
+    # this loop is from DEMO
+    for p in range(0, population_data.shape[0], 2):
+        parent_1, parent_2 = tournament_selection(population_data, population_fitness)
+
+        offspring = np.zeros((2, n_vars))
+        """ crossover """
+        if random.random() < crossover_threshold:
+            parent_1, parent_2 = toolbox.mate(parent_1, parent_2)
+
+            offspring[0] = parent_1.copy()
+            offspring[1] = parent_2.copy()
+
+        """ mutation """
+        total_offspring = uniform_mutation(offspring, total_offspring)
+
+    final_total_offspring = np.vstack(total_offspring)
+    return final_total_offspring
+
+
+def two_point_crossover_deap(population_data):
     first_point = int(np.random.uniform(0, n_vars, 1)[0])
     second_point = int(np.random.uniform(0, n_vars, 1)[0])
     crossover_point = [first_point, second_point]
@@ -184,61 +219,16 @@ def two_point_crossover_DEAP(population_data):
         if np.array_equal(parent_1, parent_2):
             parent_1 = toolbox.mutate(parent_1)[0]
 
-        # for m in crossover_point:
-        #     parent_1, parent_2 = single_point_crossover(parent_1, parent_2, m)
 
         """ DEAP two point crossover """
 
         offspring[0] = parent_1.copy()
         offspring[1] = parent_2.copy()
-        # mutation
-        for idx in range(offspring.shape[0]):
-            if np.random.uniform(0, 1.0, 1)[0] <= mutation_threshold:
-                random_value = np.random.uniform(0, 1.0, 1)
-                offspring[idx] = offspring[idx] + random_value
-        offspring[0] = np.array(list(map(lambda y: limit_the_weights(y), offspring[0])))
-        offspring[1] = np.array(list(map(lambda y: limit_the_weights(y), offspring[1])))
 
-        total_offspring.append(offspring[0])
-        total_offspring.append(offspring[1])
+        total_offspring = uniform_mutation(offspring, total_offspring)
 
     final_total_offspring = np.vstack(total_offspring)
     return final_total_offspring
-
-
-
-def single_point_crossover(parent_1, parent_2, crossover_point):
-    parent_1_new = np.append(parent_1[:crossover_point], parent_2[crossover_point:])
-    parent_2_new = np.append(parent_2[:crossover_point], parent_1[crossover_point:])
-    return parent_1_new, parent_2_new
-
-
-# def uniform_crossover_gausian_mutation(population_data):
-#     total_offspring = np.zeros((0, n_vars))  # tuple shape (0, num_of_sensors)
-#
-#     # this loop is from DEMO
-#     for p in range(0, population_data.shape[0]):
-#         parent_1, parent_2 = tournament_selection(population_data, population_fitness)
-#         parent_1 = parent_1[::2]
-#         parent_2 = parent_2[1::2]
-#
-#         one_offspring = np.zeros((1, n_vars))
-#         """ crossover """
-#         if random.random() < crossover_threshold:
-#             offspring = toolbox.mate(parent_1, parent_2)  # results in two new children in a tuple
-#             offspring_1 = offspring[0]
-#             offspring_2 = offspring[1]
-#
-#             """ combine them together?"""
-#             one_offspring = np.hstack((offspring_1, offspring_2))
-#
-#         """ mutation """
-#         if random.random() < mutation_threshold:
-#             mutated_offspring = toolbox.mutate(one_offspring)[0]
-#             total_offspring = np.vstack((total_offspring, mutated_offspring))
-#
-#         else:
-#             total_offspring = np.vstack((total_offspring, one_offspring))
 
 
 def remove_worst_and_add_diversity(modify_pop, pop_length, population_fit):
@@ -255,7 +245,6 @@ def remove_worst_and_add_diversity(modify_pop, pop_length, population_fit):
     return modify_pop, new_population_fit
 
 
-
 # loads file with the best solution for testing
 if run_mode == 'test':
     bsol = np.loadtxt(experiment_name + '/best.txt')
@@ -265,6 +254,7 @@ if run_mode == 'test':
     sys.exit(0)
 
 # todo: can we have it?
+
 # initializes population loading old solutions or generating new ones
 if not os.path.exists(experiment_name + '/evoman_solstate'):
 
@@ -320,8 +310,12 @@ for i in range(ini_g + 1, generations):
 
     """ first do crossover """
 
-    """ IF YOU WANT TO TEST THE SECOND CROSSOVER, CHANGE THE NAME """
-    offspring = two_point_crossover_uniform_mutation(whole_population)
+    """ IF YOU WANT TO TEST THE SECOND CROSSOVER, CHANGE crossover_method"""
+    if crossover_method == "two_points":
+        offspring = two_points_crossover(whole_population)
+    elif crossover_method == "uniform":
+        offspring = uniform_crossover(whole_population)
+    offspring = uniform_crossover(whole_population)
 
     """ then evaluate the fitness scores """
     fit_offspring = evaluate(offspring)
