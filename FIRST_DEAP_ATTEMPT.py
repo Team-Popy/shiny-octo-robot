@@ -40,11 +40,11 @@ if headless:
     os.environ["SDL_VIDEODRIVER"] = "dummy"
 
 """ CHOOSE THE NAME OF THE CROSSOVER """
-crossover_method = "uniform"
-#crossover_method = "two_points"
+# crossover_method = "uniform"
+crossover_method = "two_points"
 
 """ CHANGE THE NAME TO ENEMY NUMBER, CROSSOVER NAME AND TRIAL """
-experiment_name = 'enemy_1_uniform_quick_test'
+experiment_name = 'enemy_1_custon_gaustian_test'
 if not os.path.exists(experiment_name):
     os.makedirs(experiment_name)
 
@@ -78,6 +78,8 @@ population_length = 40
 generations = 10
 crossover_threshold = 0.5
 mutation_threshold = 0.2
+mean = 0
+sigma = 1
 
 last_best = 0
 
@@ -160,7 +162,13 @@ def two_points_crossover(population_data):
         offspring[0] = parent_1.copy()
         offspring[1] = parent_2.copy()
 
-        total_offspring = uniform_mutation(offspring, total_offspring)
+        mutated_offspring_1 = toolbox.mutate(offspring[0])
+        mutated_offspring_2 = toolbox.mutate(offspring[1])
+
+        mutated_offspring_1 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_1[0])))
+        mutated_offspring_2 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_2[0])))
+        total_offspring.append(mutated_offspring_1)
+        total_offspring.append(mutated_offspring_2)
 
     final_total_offspring = np.vstack(total_offspring)
     return final_total_offspring
@@ -172,16 +180,12 @@ def single_point_crossover(parent_1, parent_2, crossover_point):
     return parent_1_new, parent_2_new
 
 
-def uniform_mutation(offspring, total_offspring):
-    for idx in range(offspring.shape[0]):
-        if np.random.uniform(0, 1.0, 1)[0] <= mutation_threshold:
-            random_value = np.random.uniform(0, 1.0, 1)
-            offspring[idx] = offspring[idx] + random_value
-    offspring[0] = np.array(list(map(lambda y: limit_the_weights(y), offspring[0])))
-    offspring[1] = np.array(list(map(lambda y: limit_the_weights(y), offspring[1])))
-    total_offspring.append(offspring[0])
-    total_offspring.append(offspring[1])
-    return total_offspring
+def gaussian_mutation(offspring):
+    for i in range(len(offspring)):
+        if random.random() <= mutation_threshold:
+            random_value = random.gauss(mean, sigma)
+            offspring[i] = offspring[i] + random_value
+    return offspring
 
 
 def uniform_crossover(population_data):
@@ -219,13 +223,12 @@ def two_point_crossover_deap(population_data):
         if np.array_equal(parent_1, parent_2):
             parent_1 = toolbox.mutate(parent_1)[0]
 
-
         """ DEAP two point crossover """
 
         offspring[0] = parent_1.copy()
         offspring[1] = parent_2.copy()
 
-        total_offspring = uniform_mutation(offspring, total_offspring)
+        # total_offspring = uniform_mutation(offspring, total_offspring)
 
     final_total_offspring = np.vstack(total_offspring)
     return final_total_offspring
@@ -315,7 +318,6 @@ for i in range(ini_g + 1, generations):
         offspring = two_points_crossover(whole_population)
     elif crossover_method == "uniform":
         offspring = uniform_crossover(whole_population)
-    offspring = uniform_crossover(whole_population)
 
     """ then evaluate the fitness scores """
     fit_offspring = evaluate(offspring)
