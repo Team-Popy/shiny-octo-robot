@@ -44,7 +44,7 @@ if headless:
 crossover_method = "two_points"
 
 """ CHANGE THE NAME TO ENEMY NUMBER, CROSSOVER NAME AND TRIAL """
-experiment_name = 'enemy_1_custon_gaustian_test'
+experiment_name = 'enemy_1_custom_gaustian_test'
 if not os.path.exists(experiment_name):
     os.makedirs(experiment_name)
 
@@ -74,7 +74,7 @@ n_vars = (env.get_num_sensors() + 1) * n_hidden_neurons + (n_hidden_neurons + 1)
 lower_limit = -1
 upper_limit = 1
 
-population_length = 40
+population_length = 100
 generations = 10
 crossover_threshold = 0.5
 mutation_threshold = 0.2
@@ -142,7 +142,6 @@ def limit_the_weights(weight):
 
 
 def two_points_crossover(population_data):
-
     first_point = int(np.random.uniform(0, n_vars, 1)[0])
     second_point = int(np.random.uniform(0, n_vars, 1)[0])
     crossover_point = [first_point, second_point]
@@ -161,6 +160,10 @@ def two_points_crossover(population_data):
 
         offspring[0] = parent_1.copy()
         offspring[1] = parent_2.copy()
+
+        # Gaussian impl
+        # mutated_offspring_1 = gaussian_mutation(offspring[0])
+        # mutated_offspring_2 = gaussian_mutation(offspring[1])
 
         mutated_offspring_1 = toolbox.mutate(offspring[0])
         mutated_offspring_2 = toolbox.mutate(offspring[1])
@@ -200,35 +203,21 @@ def uniform_crossover(population_data):
         if random.random() < crossover_threshold:
             parent_1, parent_2 = toolbox.mate(parent_1, parent_2)
 
-            offspring[0] = parent_1.copy()
-            offspring[1] = parent_2.copy()
-
-        """ mutation """
-        total_offspring = uniform_mutation(offspring, total_offspring)
-
-    final_total_offspring = np.vstack(total_offspring)
-    return final_total_offspring
-
-
-def two_point_crossover_deap(population_data):
-    first_point = int(np.random.uniform(0, n_vars, 1)[0])
-    second_point = int(np.random.uniform(0, n_vars, 1)[0])
-    crossover_point = [first_point, second_point]
-    total_offspring = []
-
-    for p in range(0, population_data.shape[0], 2):
-        offspring = np.zeros((2, n_vars))
-        parent_1, parent_2 = tournament_selection(population_data, population_fitness)
-
-        if np.array_equal(parent_1, parent_2):
-            parent_1 = toolbox.mutate(parent_1)[0]
-
-        """ DEAP two point crossover """
-
         offspring[0] = parent_1.copy()
         offspring[1] = parent_2.copy()
 
-        # total_offspring = uniform_mutation(offspring, total_offspring)
+        """ mutation """
+        # Gaussian mutation
+        # mutated_offspring_1 = gaussian_mutation(offspring[0])
+        # mutated_offspring_2 = gaussian_mutation(offspring[1])
+
+        mutated_offspring_1 = toolbox.mutate(offspring[0])
+        mutated_offspring_2 = toolbox.mutate(offspring[1])
+
+        mutated_offspring_1 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_1)))
+        mutated_offspring_2 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_2)))
+        total_offspring.append(mutated_offspring_1)
+        total_offspring.append(mutated_offspring_2)
 
     final_total_offspring = np.vstack(total_offspring)
     return final_total_offspring
