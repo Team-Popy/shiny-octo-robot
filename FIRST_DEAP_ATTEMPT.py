@@ -44,7 +44,7 @@ if headless:
 crossover_method = "two_points"
 
 """ CHANGE THE NAME TO ENEMY NUMBER, CROSSOVER NAME AND TRIAL """
-experiment_name = 'enemy_1_custon_gaustian_test'
+experiment_name = 'enemy_8_custom_gaustian_mutation_test'
 if not os.path.exists(experiment_name):
     os.makedirs(experiment_name)
 
@@ -52,7 +52,7 @@ n_hidden_neurons = 10
 
 # initializes simulation in individual evolution mode, for single static enemy.
 env = Environment(experiment_name=experiment_name,
-                  enemies=[1],
+                  enemies=[8],
                   playermode="ai",
                   player_controller=player_controller(n_hidden_neurons),
                   enemymode="static",
@@ -74,8 +74,8 @@ n_vars = (env.get_num_sensors() + 1) * n_hidden_neurons + (n_hidden_neurons + 1)
 lower_limit = -1
 upper_limit = 1
 
-population_length = 40
-generations = 10
+population_length = 100
+generations = 30
 crossover_threshold = 0.5
 mutation_threshold = 0.2
 mean = 0
@@ -204,7 +204,7 @@ def uniform_crossover(population_data):
             offspring[1] = parent_2.copy()
 
         """ mutation """
-        total_offspring = uniform_mutation(offspring, total_offspring)
+        total_offspring = gaussian_mutation(offspring, total_offspring)
 
     final_total_offspring = np.vstack(total_offspring)
     return final_total_offspring
