@@ -1,0 +1,5 @@
+
+
+gen best mean std
+0 57.234809 -1.397589 10.470315
+NOT IMPROVING !!!
