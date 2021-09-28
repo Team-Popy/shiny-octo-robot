@@ -1,5 +1,4 @@
 import sys
-
 sys.path.insert(0, 'evoman')
 from environment import Environment
 from demo_controller import player_controller
@@ -10,45 +9,39 @@ from deap import base, creator
 import random
 from deap import tools
 
-
-def evaluate(x):
-    return np.array(list(map(lambda y: simulation(env, y), x)))
-
-
-# todo: remove deap when we don't need it anymore
-
-""" DEAP config starts - I DIDN'T SET ANYTHING SO WE NEED TO WORK ON THAT STILL IT'S DEFAULT FOR NOW """
-creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
-creator.create("Individual", list, fitness=creator.FitnessMin)
-
-IND_SIZE = 10
-
 toolbox = base.Toolbox()
-toolbox.register("attribute", random.random)
-toolbox.register("individual", tools.initRepeat, creator.Individual,
-                 toolbox.attribute, n=IND_SIZE)
-toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 toolbox.register("mate", tools.cxUniform, indpb=0.1)
-toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=1, indpb=0.1)
-toolbox.register("select", tools.selTournament, tournsize=3)
-toolbox.register("evaluate", evaluate)
-""" DEAP config ends """
+toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=0.1, indpb=0.2)
+
+""" CHANGE IT TO 'test' TO TEST THE RESULTS """
+run_mode = 'train'
+
+""" CHOOSE THE NAME OF THE CROSSOVER 'uniform' or 'two_points' """
+crossover_method = "two_points"
+
+""" CHANGE THE NAME TO ENEMY NUMBER, CROSSOVER NAME AND TRIAL """
+experiment_name = 'enemy_1_TEST_DOOMSDAY!!!!!_FIXED_VARIABLES_####'
+
+lower_limit = -1
+upper_limit = 1
+
+population_length = 100
+generations = 30
+crossover_threshold = 0.5
+mutation_threshold = 0.2
+mean = 0
+sigma = 0.1
+last_best = 0
+
+n_hidden_neurons = 10
 
 # choose this for not using visuals and thus making experiments faster
 headless = True
 if headless:
     os.environ["SDL_VIDEODRIVER"] = "dummy"
 
-""" CHOOSE THE NAME OF THE CROSSOVER """
-# crossover_method = "uniform"
-crossover_method = "two_points"
-
-""" CHANGE THE NAME TO ENEMY NUMBER, CROSSOVER NAME AND TRIAL """
-experiment_name = 'enemy_1_custom_gaustian_test'
 if not os.path.exists(experiment_name):
     os.makedirs(experiment_name)
-
-n_hidden_neurons = 10
 
 # initializes simulation in individual evolution mode, for single static enemy.
 env = Environment(experiment_name=experiment_name,
@@ -63,25 +56,12 @@ env = Environment(experiment_name=experiment_name,
 env.state_to_log()  # checks environment state
 # Optimization for controller solution (best genotype-weights for phenotype-network): Ganetic Algorihm    ###
 ini = time.time()  # sets time marker
-# genetic algorithm params
-""" CHANGE IT TO TEST TO TEST THE RESULTS """
-run_mode = 'train'  # train or test
 
-# number of weights for multilayer with 10 hidden neurons
 n_vars = (env.get_num_sensors() + 1) * n_hidden_neurons + (n_hidden_neurons + 1) * 5
 
-""" ATTENTION - everytime you change anything (besides gens), delete evoman_solstate file that is used here """
-lower_limit = -1
-upper_limit = 1
 
-population_length = 100
-generations = 10
-crossover_threshold = 0.5
-mutation_threshold = 0.2
-mean = 0
-sigma = 1
-
-last_best = 0
+def evaluate(x):
+    return np.array(list(map(lambda y: simulation(env, y), x)))
 
 
 # runs simulation CODE FROM DEMO
@@ -93,7 +73,7 @@ def simulation(environment, x):
 def normalization(x, pop_fitness):
     denominator_check = max(pop_fitness) - min(pop_fitness)
     if denominator_check > 0:
-        x_norm = (x - min(population_fitness)) / (max(population_fitness) - min(population_fitness))
+        x_norm = (x - min(pop_fitness)) / (max(pop_fitness) - min(pop_fitness))
 
         if x_norm <= 0:
             x_norm = 0.0000000001
@@ -102,34 +82,32 @@ def normalization(x, pop_fitness):
     return x_norm
 
 
-def tournament_selection(population, population_fitness):
-    # choosing 3 individuals from the population at random
+def tournament_selection(population, fitness_for_tournament):
+    # choosing 4 individuals from the population at random
     random_list = random.sample(range(0, population.shape[0]), 4)
     random_val_1 = random_list[0]
     random_val_2 = random_list[1]
     random_val_3 = random_list[2]
     random_val_4 = random_list[3]
 
-    first_fitness = population_fitness[random_val_1]
-    second_fitness = population_fitness[random_val_2]
-    third_fitness = population_fitness[random_val_3]
-    fourth_fitness = population_fitness[random_val_4]
+    first_fitness = fitness_for_tournament[random_val_1]
+    second_fitness = fitness_for_tournament[random_val_2]
+    third_fitness = fitness_for_tournament[random_val_3]
+    fourth_fitness = fitness_for_tournament[random_val_4]
 
     sorted_fitness = [first_fitness, second_fitness, third_fitness, fourth_fitness]
     sorted_fitness.sort(reverse=True)
     parent_1_fitness = sorted_fitness[0]
-    parent_2_fitness = sorted_fitness[3]
+    parent_2_fitness = sorted_fitness[2]
 
-    parent_1_index = list(population_fitness).index(parent_1_fitness)
-    parent_2_index = list(population_fitness).index(parent_2_fitness)
+    parent_1_index = list(fitness_for_tournament).index(parent_1_fitness)
+    parent_2_index = list(fitness_for_tournament).index(parent_2_fitness)
 
     return population[parent_1_index], population[parent_2_index]
 
 
 """ WEIGHTS INITIALIZATION """
 init_population = np.random.uniform(lower_limit, upper_limit, (population_length, n_vars))
-
-""" Make the weight limited """
 
 
 def limit_the_weights(weight):
@@ -141,35 +119,30 @@ def limit_the_weights(weight):
         return weight
 
 
-def two_points_crossover(population_data):
+def two_points_crossover(population_data, fitness_for_crossover):
     first_point = int(np.random.uniform(0, n_vars, 1)[0])
     second_point = int(np.random.uniform(0, n_vars, 1)[0])
     crossover_point = [first_point, second_point]
     total_offspring = []
 
     for p in range(0, population_data.shape[0], 2):
-        offspring = np.zeros((2, n_vars))
-        parent_1, parent_2 = tournament_selection(population_data, population_fitness)
+        offspring_crossover = np.zeros((2, n_vars))
+        parent_1, parent_2 = tournament_selection(population_data, fitness_for_crossover)
 
-        """ VERIFY IT LATER """
-        if np.array_equal(parent_1, parent_2):
-            parent_1 = toolbox.mutate(parent_1)[0]
-
+        """ crossover """
         for m in crossover_point:
             parent_1, parent_2 = single_point_crossover(parent_1, parent_2, m)
 
-        offspring[0] = parent_1.copy()
-        offspring[1] = parent_2.copy()
+        offspring_crossover[0] = parent_1.copy()
+        offspring_crossover[1] = parent_2.copy()
 
-        # Gaussian impl
-        # mutated_offspring_1 = gaussian_mutation(offspring[0])
-        # mutated_offspring_2 = gaussian_mutation(offspring[1])
-
-        mutated_offspring_1 = toolbox.mutate(offspring[0])
-        mutated_offspring_2 = toolbox.mutate(offspring[1])
+        """ mutation """
+        mutated_offspring_1 = toolbox.mutate(offspring_crossover[0])
+        mutated_offspring_2 = toolbox.mutate(offspring_crossover[1])
 
         mutated_offspring_1 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_1[0])))
         mutated_offspring_2 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_2[0])))
+
         total_offspring.append(mutated_offspring_1)
         total_offspring.append(mutated_offspring_2)
 
@@ -183,36 +156,33 @@ def single_point_crossover(parent_1, parent_2, crossover_point):
     return parent_1_new, parent_2_new
 
 
-def gaussian_mutation(offspring):
-    for i in range(len(offspring)):
-        if random.random() <= mutation_threshold:
-            random_value = random.gauss(mean, sigma)
-            offspring[i] = offspring[i] + random_value
-    return offspring
+# probably we will delete it later
+# def gaussian_mutation(offspring_data):
+#     for k in range(len(offspring_data)):
+#         if random.random() <= mutation_threshold:
+#             random_value = random.gauss(mean, sigma)
+#             offspring_data[k] = offspring_data[k] + random_value
+#     return offspring_data
 
 
-def uniform_crossover(population_data):
+def uniform_crossover(population_data, uniform_fitness):
     total_offspring = []  # tuple shape (0, num_of_sensors)
 
     # this loop is from DEMO
     for p in range(0, population_data.shape[0], 2):
-        parent_1, parent_2 = tournament_selection(population_data, population_fitness)
+        parent_1, parent_2 = tournament_selection(population_data, uniform_fitness)
 
-        offspring = np.zeros((2, n_vars))
+        offspring_uniform = np.zeros((2, n_vars))
         """ crossover """
         if random.random() < crossover_threshold:
             parent_1, parent_2 = toolbox.mate(parent_1, parent_2)
 
-        offspring[0] = parent_1.copy()
-        offspring[1] = parent_2.copy()
+        offspring_uniform[0] = parent_1.copy()
+        offspring_uniform[1] = parent_2.copy()
 
         """ mutation """
-        # Gaussian mutation
-        # mutated_offspring_1 = gaussian_mutation(offspring[0])
-        # mutated_offspring_2 = gaussian_mutation(offspring[1])
-
-        mutated_offspring_1 = toolbox.mutate(offspring[0])
-        mutated_offspring_2 = toolbox.mutate(offspring[1])
+        mutated_offspring_1 = toolbox.mutate(offspring_uniform[0])
+        mutated_offspring_2 = toolbox.mutate(offspring_uniform[1])
 
         mutated_offspring_1 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_1)))
         mutated_offspring_2 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_2)))
@@ -223,18 +193,20 @@ def uniform_crossover(population_data):
     return final_total_offspring
 
 
-def remove_worst_and_add_diversity(modify_pop, pop_length, population_fit):
+def remove_worst_and_add_diversity(input_pop, pop_length, population_fit):
     remove_n_samples = int(pop_length / 4)
     worst_fitness_scores_indexes = np.argpartition(population_fit, remove_n_samples)[:remove_n_samples]
-    modify_pop = np.delete(modify_pop, worst_fitness_scores_indexes, 0)
+
+    cleaned_pop = np.delete(input_pop, worst_fitness_scores_indexes, 0)
+    cleaned_fitness = np.delete(population_fit, worst_fitness_scores_indexes, 0)
 
     new_random_samples = np.random.uniform(lower_limit, upper_limit, (remove_n_samples, n_vars))
+    fitness_for_random = evaluate(new_random_samples)
 
-    modify_pop = np.vstack((modify_pop, new_random_samples))
+    new_pop = np.vstack((new_random_samples, cleaned_pop))
+    new_fitness = np.hstack((fitness_for_random, cleaned_fitness))
 
-    new_population_fit = evaluate(modify_pop)
-
-    return modify_pop, new_population_fit
+    return new_pop, new_fitness
 
 
 # loads file with the best solution for testing
@@ -245,20 +217,18 @@ if run_mode == 'test':
     evaluate([bsol])
     sys.exit(0)
 
-# todo: can we have it?
-
 # initializes population loading old solutions or generating new ones
 if not os.path.exists(experiment_name + '/evoman_solstate'):
 
     print('\nNEW EVOLUTION\n')
 
     whole_population = np.random.uniform(lower_limit, upper_limit, (population_length, n_vars))
-    population_fitness = evaluate(whole_population)
-    best = np.argmax(population_fitness)
-    mean = np.mean(population_fitness)
-    std = np.std(population_fitness)
+    first_population_fitness = evaluate(whole_population)
+    best = np.argmax(first_population_fitness)
+    mean = np.mean(first_population_fitness)
+    std = np.std(first_population_fitness)
     ini_g = 0
-    solutions = [whole_population, population_fitness]
+    solutions = [whole_population, first_population_fitness]
     env.update_solutions(solutions)
 
 else:
@@ -267,11 +237,11 @@ else:
 
     env.load_state()
     whole_population = env.solutions[0]
-    population_fitness = env.solutions[1]
+    first_population_fitness = env.solutions[1]
 
-    best = np.argmax(population_fitness)
-    mean = np.mean(population_fitness)
-    std = np.std(population_fitness)
+    best = np.argmax(first_population_fitness)
+    mean = np.mean(first_population_fitness)
+    std = np.std(first_population_fitness)
 
     # finds last generation number
     file_aux = open(experiment_name + '/gen.txt', 'r')
@@ -281,32 +251,31 @@ else:
 # saves results for first pop
 file_aux = open(experiment_name + '/results.txt', 'a')
 file_aux.write('\n\ngen best mean std')
-print('\n GENERATION ' + str(ini_g) + ' ' + str(round(population_fitness[best], 6)) + ' ' + str(
+print('\n GENERATION ' + str(ini_g) + ' ' + str(round(first_population_fitness[best], 6)) + ' ' + str(
     round(mean, 6)) + ' ' + str(
     round(std, 6)))
 file_aux.write(
-    '\n' + str(ini_g) + ' ' + str(round(population_fitness[best], 6)) + ' ' + str(round(mean, 6)) + ' ' + str(
+    '\n' + str(ini_g) + ' ' + str(round(first_population_fitness[best], 6)) + ' ' + str(round(mean, 6)) + ' ' + str(
         round(std, 6)))
 file_aux.close()
 
 # evolution ********************************************************
 
-last_mean = np.mean(population_fitness)
+last_mean = np.mean(first_population_fitness)
+last_best = np.argmax(first_population_fitness)
 not_improving = 0
+
+population_fitness = first_population_fitness.copy()
 
 for i in range(ini_g + 1, generations):
     print(ini_g)
     print(f"!!!!!!!!!!!! generation number {i}")
 
-    # amount of offspring is not constant in this solution
-
-    """ first do crossover """
-
     """ IF YOU WANT TO TEST THE SECOND CROSSOVER, CHANGE crossover_method"""
     if crossover_method == "two_points":
-        offspring = two_points_crossover(whole_population)
-    elif crossover_method == "uniform":
-        offspring = uniform_crossover(whole_population)
+        offspring = two_points_crossover(whole_population, population_fitness)
+    else:
+        offspring = uniform_crossover(whole_population, population_fitness)
 
     """ then evaluate the fitness scores """
     fit_offspring = evaluate(offspring)
@@ -318,7 +287,7 @@ for i in range(ini_g + 1, generations):
     population_fitness = np.append(population_fitness, fit_offspring)
 
     """ OUR CURRENT SURVIVAL SELECTION METHOD """
-    index_threshold = np.random.uniform(0.05, 0.15, 1)[0]
+    index_threshold = np.random.uniform(0.2, 0.5, 1)[0]
     best_amount = int(population_length * index_threshold)
     rest_offspring = int(population_length - best_amount)
 
@@ -334,23 +303,24 @@ for i in range(ini_g + 1, generations):
     final_indexes = np.hstack((randomness_population, best_fitness_scores_indexes))
 
     whole_population = whole_population[final_indexes]
-    population_fitness = population_fitness[final_indexes]
+    population_fitness = population_fitness[final_indexes].copy()
 
     """ statistics about the last fitness """
     best = np.argmax(population_fitness)
     std = np.std(population_fitness)
     current_mean = np.mean(population_fitness)
+    current_best = np.argmax(population_fitness)
     mean = np.mean(population_fitness)
 
     """ using mean to decide on additional steps for the diversity """
 
-    if current_mean <= last_mean:
+    if current_best <= last_best:
         not_improving += 1
     else:
-        last_mean = current_mean
+        last_best = current_best
         not_improving = 0
 
-    if not_improving >= 3:
+    if not_improving >= 2:
         file_aux = open(experiment_name + '/results.txt', 'a')
         file_aux.write('\nNOT IMPROVING !!!')
         file_aux.close()
@@ -358,6 +328,11 @@ for i in range(ini_g + 1, generations):
         whole_population, population_fitness = remove_worst_and_add_diversity(whole_population, population_length,
                                                                               population_fitness)
         not_improving = 0
+
+    """ statistics about the last fitness """
+    best = np.argmax(population_fitness)
+    std = np.std(population_fitness)
+    mean = np.mean(population_fitness)
 
     # saves results
     file_aux = open(experiment_name + '/results.txt', 'a')
