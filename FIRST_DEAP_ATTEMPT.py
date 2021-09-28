@@ -11,14 +11,6 @@ import random
 from deap import tools
 
 
-""" CHANGE IT TO 'test' TO TEST THE RESULTS """
-choose_run_mode = 'train'
-
-""" CHOOSE THE NAME OF THE CROSSOVER 'uniform' or 'two_points' """
-cross_method = "two_points"
-enemy_num = 8
-
-
 def run_the_whole_experiment(enemy_number, crossover_method, run_mode, iteration_num):
 
     toolbox = base.Toolbox()
@@ -348,7 +340,22 @@ def run_the_whole_experiment(enemy_number, crossover_method, run_mode, iteration
     env.state_to_log()  # checks environment state
 
 
-for i in range(1, 10):
+""" ENEMY DIVISION 
+Alicja - 2
+Melis - 8
+Rumy - 5
+
+"""
+
+
+""" CHANGE IT TO 'test' TO TEST THE RESULTS """
+choose_run_mode = 'train'
+
+""" CHOOSE THE NAME OF THE CROSSOVER 'uniform' or 'two_points' """
+cross_method = "two_points"
+enemy_num = 2
+
+for i in range(1, 11):
     run_the_whole_experiment(enemy_num, cross_method, choose_run_mode, i)
 
 
