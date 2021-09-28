@@ -287,7 +287,7 @@ for i in range(ini_g + 1, generations):
     population_fitness = np.append(population_fitness, fit_offspring)
 
     """ OUR CURRENT SURVIVAL SELECTION METHOD """
-    index_threshold = np.random.uniform(0.2, 0.5, 1)[0]
+    index_threshold = np.random.uniform(0.02, 0.05, 1)[0]
     best_amount = int(population_length * index_threshold)
     rest_offspring = int(population_length - best_amount)
 
@@ -320,7 +320,7 @@ for i in range(ini_g + 1, generations):
         last_best = current_best
         not_improving = 0
 
-    if not_improving >= 2:
+    if not_improving >= 3:
         file_aux = open(experiment_name + '/results.txt', 'a')
         file_aux.write('\nNOT IMPROVING !!!')
         file_aux.close()
