@@ -20,7 +20,7 @@ run_mode = 'train'
 crossover_method = "two_points"
 
 """ CHANGE THE NAME TO ENEMY NUMBER, CROSSOVER NAME AND TRIAL """
-experiment_name = 'enemy_1_TEST_DOOMSDAY!!!!!_FIXED_VARIABLES_####'
+experiment_name = 'enemy_1_TEST_sigma_10'
 
 lower_limit = -1
 upper_limit = 1
