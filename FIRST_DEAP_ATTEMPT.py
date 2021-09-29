@@ -21,7 +21,7 @@ def run_the_whole_experiment(enemy_number, crossover_method, run_mode, iteration
     upper_limit = 1
 
     population_length = 100
-    generations = 5
+    generations = 30
     crossover_threshold = 0.5
     n_hidden_neurons = 10
 
@@ -159,8 +159,8 @@ def run_the_whole_experiment(enemy_number, crossover_method, run_mode, iteration
             mutated_offspring_1 = toolbox.mutate(offspring_uniform[0])
             mutated_offspring_2 = toolbox.mutate(offspring_uniform[1])
 
-            mutated_offspring_1 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_1)))
-            mutated_offspring_2 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_2)))
+            mutated_offspring_1 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_1[0])))
+            mutated_offspring_2 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_2[0])))
             total_offspring.append(mutated_offspring_1)
             total_offspring.append(mutated_offspring_2)
 
@@ -295,9 +295,9 @@ def run_the_whole_experiment(enemy_number, crossover_method, run_mode, iteration
             not_improving = 0
 
         if not_improving >= 3:
-            file_aux = open(experiment_name + '/results.txt', 'a')
-            file_aux.write('\nNOT IMPROVING !!!')
-            file_aux.close()
+            # file_aux = open(experiment_name + '/results.txt', 'a')
+            # file_aux.write('\nNOT IMPROVING !!!')
+            # file_aux.close()
 
             whole_population, population_fitness = remove_worst_and_add_diversity(whole_population, population_length,
                                                                                   population_fitness)
@@ -352,8 +352,8 @@ Rumy - 5
 choose_run_mode = 'train'
 
 """ CHOOSE THE NAME OF THE CROSSOVER 'uniform' or 'two_points' """
-cross_method = "two_points"
-enemy_num = 2
+cross_method = "uniform"
+enemy_num = 8
 
 for i in range(1, 11):
     run_the_whole_experiment(enemy_num, cross_method, choose_run_mode, i)
