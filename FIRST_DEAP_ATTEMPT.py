@@ -351,9 +351,12 @@ Rumy - 5
 """ CHANGE IT TO 'test' TO TEST THE RESULTS """
 choose_run_mode = 'train'
 
+""" then run enemy 4 """
+
 """ CHOOSE THE NAME OF THE CROSSOVER 'uniform' or 'two_points' """
-cross_method = "uniform"
-enemy_num = 8
+
+cross_method = "two_points"
+enemy_num = 4
 
 for i in range(1, 11):
     run_the_whole_experiment(enemy_num, cross_method, choose_run_mode, i)
