@@ -354,6 +354,7 @@ choose_run_mode = 'train'
 """ then run enemy 4 """
 
 """ CHOOSE THE NAME OF THE CROSSOVER 'uniform' or 'two_points' """
+
 cross_method = "two_points"
 enemy_num = 4
 
