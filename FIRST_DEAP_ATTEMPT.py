@@ -294,9 +294,9 @@ def run_the_whole_experiment(enemy_number, crossover_method, run_mode, iteration
             not_improving = 0
 
         if not_improving >= 3:
-            file_aux = open(experiment_name + '/results.txt', 'a')
-            file_aux.write('\nNOT IMPROVING !!!')
-            file_aux.close()
+            # file_aux = open(experiment_name + '/results.txt', 'a')
+            # file_aux.write('\nNOT IMPROVING !!!')
+            # file_aux.close()
 
             whole_population, population_fitness = remove_worst_and_add_diversity(whole_population, population_length,
                                                                                   population_fitness)
@@ -348,6 +348,8 @@ Rumy - 5
 
 """ CHANGE IT TO 'test' TO TEST THE RESULTS """
 choose_run_mode = 'train'
+
+""" then run enemy 4 """
 
 """ CHOOSE THE NAME OF THE CROSSOVER 'uniform' or 'two_points' """
 cross_method = "uniform"
