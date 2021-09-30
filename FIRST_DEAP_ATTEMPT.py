@@ -6,13 +6,12 @@ from demo_controller import player_controller
 import time
 import numpy as np
 import os
-from deap import base, creator
+from deap import base
 import random
 from deap import tools
 
 
 def run_the_whole_experiment(enemy_number, crossover_method, run_mode, iteration_num):
-
     toolbox = base.Toolbox()
     toolbox.register("mate", tools.cxUniform, indpb=0.1)
     toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=0.1, indpb=0.2)
@@ -347,19 +346,14 @@ Rumy - 5
 
 """
 
-
 """ CHANGE IT TO 'test' TO TEST THE RESULTS """
 choose_run_mode = 'train'
 
 """ then run enemy 4 """
 
 """ CHOOSE THE NAME OF THE CROSSOVER 'uniform' or 'two_points' """
-
-cross_method = "two_points"
-enemy_num = 4
+cross_method = "uniform"
+enemy_num = 5
 
 for i in range(1, 11):
     run_the_whole_experiment(enemy_num, cross_method, choose_run_mode, i)
-
-
-
