@@ -199,157 +199,157 @@ def run_the_whole_experiment(enemy_number, crossover_method, run_mode, iteration
         test_scores = open(filename, append_write)
         test_scores.writelines('\n' + str(fitness_result))
         test_scores.close()
-        if iteration_num == 10:
+        if iteration_num == 10 and test_number == 5:
             sys.exit(0)
-
-   # initializes population loading old solutions or generating new ones
-    if not os.path.exists(experiment_name + '/evoman_solstate'):
-
-        print('\nNEW EVOLUTION\n')
-
-        whole_population = np.random.uniform(lower_limit, upper_limit, (population_length, n_vars))
-        first_population_fitness = evaluate(whole_population)
-        best = np.argmax(first_population_fitness)
-        mean = np.mean(first_population_fitness)
-        std = np.std(first_population_fitness)
-        ini_g = 0
-        solutions = [whole_population, first_population_fitness]
-        env.update_solutions(solutions)
-
-    else:
-
-        print('\nCONTINUING EVOLUTION\n')
-
-        env.load_state()
-        whole_population = env.solutions[0]
-        first_population_fitness = env.solutions[1]
-
-        best = np.argmax(first_population_fitness)
-        mean = np.mean(first_population_fitness)
-        std = np.std(first_population_fitness)
-
-        # finds last generation number
-        file_aux = open(experiment_name + '/gen.txt', 'r')
-        ini_g = int(file_aux.readline())
-        file_aux.close()
-
-    # saves results for first pop
-    file_aux = open(experiment_name + '/results.txt', 'a')
-    file_aux.write('\n\ngen best mean std')
-    print('\n GENERATION ' + str(ini_g) + ' ' + str(round(first_population_fitness[best], 6)) + ' ' + str(
-        round(mean, 6)) + ' ' + str(
-        round(std, 6)))
-    file_aux.write(
-        '\n' + str(ini_g) + ' ' + str(round(first_population_fitness[best], 6)) + ' ' + str(round(mean, 6)) + ' ' + str(
-            round(std, 6)))
-    file_aux.close()
-
-    # evolution ********************************************************
-
-    last_mean = np.mean(first_population_fitness)
-    last_best = np.argmax(first_population_fitness)
-    not_improving = 0
-
-    population_fitness = first_population_fitness.copy()
-
-    for i in range(ini_g + 1, generations):
-        print(ini_g)
-        print(f"!!!!!!!!!!!! generation number {i}")
-
-        """ IF YOU WANT TO TEST THE SECOND CROSSOVER, CHANGE crossover_method"""
-        if crossover_method == "two_points":
-            offspring = two_points_crossover(whole_population, population_fitness)
-        else:
-            offspring = uniform_crossover(whole_population, population_fitness)
-
-        """ then evaluate the fitness scores """
-        fit_offspring = evaluate(offspring)
-
-        """ combine old population with the offspring """
-        whole_population = np.vstack((whole_population, offspring))
-
-        """ it adds ndarrays horizontally """
-        population_fitness = np.append(population_fitness, fit_offspring)
-
-        """ OUR CURRENT SURVIVAL SELECTION METHOD """
-        index_threshold = np.random.uniform(0.02, 0.05, 1)[0]
-        best_amount = int(population_length * index_threshold)
-        rest_offspring = int(population_length - best_amount)
-
-        best_fitness_scores_indexes = np.argpartition(population_fitness, -best_amount)[-best_amount:]
-
-        population_fitness_copy = population_fitness.copy()
-        population_fitness_normalized = np.array(
-            list(map(lambda y: normalization(y, population_fitness_copy), population_fitness)))
-
-        probability = population_fitness_normalized / population_fitness_normalized.sum()
-        randomness_population = np.random.choice(whole_population.shape[0], rest_offspring, p=probability,
-                                                 replace=False)
-
-        final_indexes = np.hstack((randomness_population, best_fitness_scores_indexes))
-
-        whole_population = whole_population[final_indexes]
-        population_fitness = population_fitness[final_indexes].copy()
-
-        """ statistics about the last fitness """
-        best = np.argmax(population_fitness)
-        std = np.std(population_fitness)
-        current_mean = np.mean(population_fitness)
-        current_best = np.argmax(population_fitness)
-        mean = np.mean(population_fitness)
-
-        """ using mean to decide on additional steps for the diversity """
-
-        if current_best <= last_best:
-            not_improving += 1
-        else:
-            last_best = current_best
-            not_improving = 0
-
-        if not_improving >= 3:
-            # file_aux = open(experiment_name + '/results.txt', 'a')
-            # file_aux.write('\nNOT IMPROVING !!!')
-            # file_aux.close()
-
-            whole_population, population_fitness = remove_worst_and_add_diversity(whole_population, population_length,
-                                                                                  population_fitness)
-            not_improving = 0
-
-        """ statistics about the last fitness """
-        best = np.argmax(population_fitness)
-        std = np.std(population_fitness)
-        mean = np.mean(population_fitness)
-
-        # saves results
-        file_aux = open(experiment_name + '/results.txt', 'a')
-        print('\n GENERATION ' + str(i) + ' ' + str(round(population_fitness[best], 6)) + ' ' + str(
-            round(mean, 6)) + ' ' + str(
-            round(std, 6)))
-        file_aux.write(
-            '\n' + str(i) + ' ' + str(round(population_fitness[best], 6)) + ' ' + str(round(mean, 6)) + ' ' + str(
-                round(std, 6)))
-        file_aux.close()
-
-        # saves generation number
-        file_aux = open(experiment_name + '/gen.txt', 'w')
-        file_aux.write(str(i))
-        file_aux.close()
-
-        # saves file with the best solution
-        np.savetxt(experiment_name + '/best.txt', whole_population[best])
-
-        # saves simulation state
-        solutions = [whole_population, population_fitness]
-        env.update_solutions(solutions)
-        env.save_state()
-
-    fim = time.time()  # prints total execution time for experiment
-    print('\nExecution time: ' + str(round((fim - ini) / 60)) + ' minutes \n')
-
-    file = open(experiment_name + '/neuroended', 'w')  # saves control (simulation has ended) file for bash loop file
-    file.close()
-
-    env.state_to_log()  # checks environment state
+   #
+   # # initializes population loading old solutions or generating new ones
+   #  if not os.path.exists(experiment_name + '/evoman_solstate'):
+   #
+   #      print('\nNEW EVOLUTION\n')
+   #
+   #      whole_population = np.random.uniform(lower_limit, upper_limit, (population_length, n_vars))
+   #      first_population_fitness = evaluate(whole_population)
+   #      best = np.argmax(first_population_fitness)
+   #      mean = np.mean(first_population_fitness)
+   #      std = np.std(first_population_fitness)
+   #      ini_g = 0
+   #      solutions = [whole_population, first_population_fitness]
+   #      env.update_solutions(solutions)
+   #
+   #  else:
+   #
+   #      print('\nCONTINUING EVOLUTION\n')
+   #
+   #      env.load_state()
+   #      whole_population = env.solutions[0]
+   #      first_population_fitness = env.solutions[1]
+   #
+   #      best = np.argmax(first_population_fitness)
+   #      mean = np.mean(first_population_fitness)
+   #      std = np.std(first_population_fitness)
+   #
+   #      # finds last generation number
+   #      file_aux = open(experiment_name + '/gen.txt', 'r')
+   #      ini_g = int(file_aux.readline())
+   #      file_aux.close()
+   #
+   #  # saves results for first pop
+   #  file_aux = open(experiment_name + '/results.txt', 'a')
+   #  file_aux.write('\n\ngen best mean std')
+   #  print('\n GENERATION ' + str(ini_g) + ' ' + str(round(first_population_fitness[best], 6)) + ' ' + str(
+   #      round(mean, 6)) + ' ' + str(
+   #      round(std, 6)))
+   #  file_aux.write(
+   #      '\n' + str(ini_g) + ' ' + str(round(first_population_fitness[best], 6)) + ' ' + str(round(mean, 6)) + ' ' + str(
+   #          round(std, 6)))
+   #  file_aux.close()
+   #
+   #  # evolution ********************************************************
+   #
+   #  last_mean = np.mean(first_population_fitness)
+   #  last_best = np.argmax(first_population_fitness)
+   #  not_improving = 0
+   #
+   #  population_fitness = first_population_fitness.copy()
+   #
+   #  for i in range(ini_g + 1, generations):
+   #      print(ini_g)
+   #      print(f"!!!!!!!!!!!! generation number {i}")
+   #
+   #      """ IF YOU WANT TO TEST THE SECOND CROSSOVER, CHANGE crossover_method"""
+   #      if crossover_method == "two_points":
+   #          offspring = two_points_crossover(whole_population, population_fitness)
+   #      else:
+   #          offspring = uniform_crossover(whole_population, population_fitness)
+   #
+   #      """ then evaluate the fitness scores """
+   #      fit_offspring = evaluate(offspring)
+   #
+   #      """ combine old population with the offspring """
+   #      whole_population = np.vstack((whole_population, offspring))
+   #
+   #      """ it adds ndarrays horizontally """
+   #      population_fitness = np.append(population_fitness, fit_offspring)
+   #
+   #      """ OUR CURRENT SURVIVAL SELECTION METHOD """
+   #      index_threshold = np.random.uniform(0.02, 0.05, 1)[0]
+   #      best_amount = int(population_length * index_threshold)
+   #      rest_offspring = int(population_length - best_amount)
+   #
+   #      best_fitness_scores_indexes = np.argpartition(population_fitness, -best_amount)[-best_amount:]
+   #
+   #      population_fitness_copy = population_fitness.copy()
+   #      population_fitness_normalized = np.array(
+   #          list(map(lambda y: normalization(y, population_fitness_copy), population_fitness)))
+   #
+   #      probability = population_fitness_normalized / population_fitness_normalized.sum()
+   #      randomness_population = np.random.choice(whole_population.shape[0], rest_offspring, p=probability,
+   #                                               replace=False)
+   #
+   #      final_indexes = np.hstack((randomness_population, best_fitness_scores_indexes))
+   #
+   #      whole_population = whole_population[final_indexes]
+   #      population_fitness = population_fitness[final_indexes].copy()
+   #
+   #      """ statistics about the last fitness """
+   #      best = np.argmax(population_fitness)
+   #      std = np.std(population_fitness)
+   #      current_mean = np.mean(population_fitness)
+   #      current_best = np.argmax(population_fitness)
+   #      mean = np.mean(population_fitness)
+   #
+   #      """ using mean to decide on additional steps for the diversity """
+   #
+   #      if current_best <= last_best:
+   #          not_improving += 1
+   #      else:
+   #          last_best = current_best
+   #          not_improving = 0
+   #
+   #      if not_improving >= 3:
+   #          # file_aux = open(experiment_name + '/results.txt', 'a')
+   #          # file_aux.write('\nNOT IMPROVING !!!')
+   #          # file_aux.close()
+   #
+   #          whole_population, population_fitness = remove_worst_and_add_diversity(whole_population, population_length,
+   #                                                                                population_fitness)
+   #          not_improving = 0
+   #
+   #      """ statistics about the last fitness """
+   #      best = np.argmax(population_fitness)
+   #      std = np.std(population_fitness)
+   #      mean = np.mean(population_fitness)
+   #
+   #      # saves results
+   #      file_aux = open(experiment_name + '/results.txt', 'a')
+   #      print('\n GENERATION ' + str(i) + ' ' + str(round(population_fitness[best], 6)) + ' ' + str(
+   #          round(mean, 6)) + ' ' + str(
+   #          round(std, 6)))
+   #      file_aux.write(
+   #          '\n' + str(i) + ' ' + str(round(population_fitness[best], 6)) + ' ' + str(round(mean, 6)) + ' ' + str(
+   #              round(std, 6)))
+   #      file_aux.close()
+   #
+   #      # saves generation number
+   #      file_aux = open(experiment_name + '/gen.txt', 'w')
+   #      file_aux.write(str(i))
+   #      file_aux.close()
+   #
+   #      # saves file with the best solution
+   #      np.savetxt(experiment_name + '/best.txt', whole_population[best])
+   #
+   #      # saves simulation state
+   #      solutions = [whole_population, population_fitness]
+   #      env.update_solutions(solutions)
+   #      env.save_state()
+   #
+   #  fim = time.time()  # prints total execution time for experiment
+   #  print('\nExecution time: ' + str(round((fim - ini) / 60)) + ' minutes \n')
+   #
+   #  file = open(experiment_name + '/neuroended', 'w')  # saves control (simulation has ended) file for bash loop file
+   #  file.close()
+   #
+   #  env.state_to_log()  # checks environment state
 
 
 """ ENEMY DIVISION 
