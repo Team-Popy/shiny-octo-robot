@@ -9,9 +9,10 @@ import os
 from deap import base
 import random
 from deap import tools
+from pathlib import Path
 
 
-def run_the_whole_experiment(enemy_number, crossover_method, run_mode, iteration_num):
+def run_the_whole_experiment(enemy_number, crossover_method, run_mode, iteration_num, test_number):
     toolbox = base.Toolbox()
     toolbox.register("mate", tools.cxUniform, indpb=0.1)
     toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=0.1, indpb=0.2)
@@ -186,10 +187,22 @@ def run_the_whole_experiment(enemy_number, crossover_method, run_mode, iteration
         bsol = np.loadtxt(experiment_name + '/best.txt')
         print('\n RUNNING SAVED BEST SOLUTION \n')
         env.update_parameter('speed', 'normal')
-        evaluate([bsol])
-        sys.exit(0)
+        fitness_result = evaluate([bsol])[0]
 
-    # initializes population loading old solutions or generating new ones
+        filename = Path(experiment_name + "/tests.txt")
+
+        if os.path.exists(filename):
+            append_write = 'a'  # append if already exists
+        else:
+            append_write = 'w'  # make a new file if not
+
+        test_scores = open(filename, append_write)
+        test_scores.writelines('\n' + str(fitness_result))
+        test_scores.close()
+        if iteration_num == 10:
+            sys.exit(0)
+
+   # initializes population loading old solutions or generating new ones
     if not os.path.exists(experiment_name + '/evoman_solstate'):
 
         print('\nNEW EVOLUTION\n')
@@ -347,13 +360,14 @@ Rumy - 5
 """
 
 """ CHANGE IT TO 'test' TO TEST THE RESULTS """
-choose_run_mode = 'train'
+choose_run_mode = 'test'
 
 """ then run enemy 4 """
 
 """ CHOOSE THE NAME OF THE CROSSOVER 'uniform' or 'two_points' """
 cross_method = "uniform"
-enemy_num = 5
+enemy_num = 8
 
-for i in range(1, 11):
-    run_the_whole_experiment(enemy_num, cross_method, choose_run_mode, i)
+for j in range(10, 11):
+    for i in range(1, 6):
+        run_the_whole_experiment(enemy_num, cross_method, choose_run_mode, j, i)
