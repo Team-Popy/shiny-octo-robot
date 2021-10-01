@@ -350,7 +350,7 @@ cross_method = "uniform"
 enemy_num = 7
 
 if choose_run_mode == "test":
-    for j in range(10, 11):
+    for j in range(1, 11):
         for i in range(1, 6):
             run_the_whole_experiment(enemy_num, cross_method, choose_run_mode, j, i)
 elif choose_run_mode == "train":
