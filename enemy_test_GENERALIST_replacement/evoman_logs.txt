@@ -86,48 +86,6 @@ PARAMETER CHANGE: savelogs = yes
 
 MESSAGE: state has been loaded.
 
-########## Simulation state - INI ###########
+RUN: run status: enemy: 6; fitness: 11.926955465899596; player life: 0; enemy life: 80.0; time: 434
 
-# solutions # : LOADED 
-
-# sensors # : 20
-
- ------  parameters ------  
-
-# contact hurt (training agent) # : player
-
-multiple mode: yes
-
-enemies list: 6 8
-
-current enemy: 8
-
-player mode: ai
-
-enemy mode: static
-
-level: 2
-
-clock precision: low
-
-inputs coded: no
-
-random initialization: yes
-
-expiration time: 3000
-
-speed: fastest
-
-load player: yes
-
-load enemy: yes
-
-sound: off
-
-overture time: 100
-
-logs: on
-
-save logs: yes
-
-########## Simulation state - END ###########
+RUN: run status: enemy: 8; fitness: 29.9717214797693; player life: 0; enemy life: 60.0; time: 415
