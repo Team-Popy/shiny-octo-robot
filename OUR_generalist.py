@@ -1,4 +1,9 @@
 """ GENERALIST """
+""" for multiple enemies the default fitness function is this (it first creates a list of values per each enemy) 
+values.mean() - values.std()
+"""
+
+#todo: later hybridization
 
 import sys
 
@@ -17,18 +22,18 @@ from pathlib import Path
 choose_run_mode = 'train'
 
 crossover_method = "two_points"
-experiment_name = "enemy_1_2_3_our_old_solution_test1"
+experiment_name = "enemy_test_GENERALIST_mutation_0.4"
 run_mode = "train"
 
 toolbox = base.Toolbox()
 toolbox.register("mate", tools.cxUniform, indpb=0.1)
-toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=0.1, indpb=0.2)
+toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=0.1, indpb=0.4)
 
 lower_limit = -1
 upper_limit = 1
 
-population_length = 100
-generations = 30
+population_length = 50
+generations = 10
 crossover_threshold = 0.5
 n_hidden_neurons = 10
 
@@ -40,10 +45,10 @@ if headless:
 if not os.path.exists(experiment_name):
     os.makedirs(experiment_name)
 
-""" We chose 2,5, and 8 enemies """
+
 # initializes simulation in individual evolution mode, for single static enemy.
 env = Environment(experiment_name=experiment_name,
-                  enemies=[1, 2, 3],
+                  enemies=[6, 8],
                   multiplemode="yes",
                   playermode="ai",
                   player_controller=player_controller(n_hidden_neurons),
@@ -56,6 +61,7 @@ ini = time.time()  # sets time marker
 
 n_vars = (env.get_num_sensors() + 1) * n_hidden_neurons + (n_hidden_neurons + 1) * 5
 
+#todo: decide if to use random seed
 
 def evaluate(x):
     return np.array(list(map(lambda y: simulation(env, y), x)))
@@ -79,7 +85,7 @@ def normalization(x, pop_fitness):
     return x_norm
 
 
-# todo: research if we can make better parent selection
+# todo: make it better for multi objective EA - Alicja
 def tournament_selection(population, fitness_for_tournament):
     # choosing 4 individuals from the population at random
     random_list = random.sample(range(0, population.shape[0]), 4)
@@ -144,24 +150,7 @@ def single_point_crossover(parent_1, parent_2, crossover_point):
     return parent_1_new, parent_2_new
 
 
-# def uniform_crossover(population_data, uniform_fitness):
-#     total_offspring = []
-#
-#     for p in range(0, population_data.shape[0], 2):
-#         parent_1, parent_2 = tournament_selection(population_data, uniform_fitness)
-#
-#         offspring_uniform = np.zeros((2, n_vars))
-#         """ crossover """
-#         if random.random() < crossover_threshold:
-#             parent_1, parent_2 = toolbox.mate(parent_1, parent_2)
-#
-#         """ mutation """
-#         total_offspring = mutate(offspring_uniform, parent_1, parent_2, total_offspring)
-#
-#     final_total_offspring = np.vstack(total_offspring)
-#     return final_total_offspring
-
-# todo: research if we can do better mutation
+# todo: implement two ways of mutation for our research question - Rumy
 def mutate(offspring_uniform, parent_1, parent_2, total_offspring):
     offspring_uniform[0] = parent_1.copy()
     offspring_uniform[1] = parent_2.copy()
@@ -177,7 +166,7 @@ def mutate(offspring_uniform, parent_1, parent_2, total_offspring):
 
     return total_offspring
 
-# todo: fix the doomsday or do not use it
+# todo: fix the doomsday - Melis
 def remove_worst_and_add_diversity(input_pop, pop_length, population_fit):
     remove_n_samples = int(pop_length / 4)
     worst_fitness_scores_indexes = np.argpartition(population_fit, remove_n_samples)[:remove_n_samples]
@@ -280,6 +269,7 @@ else:
         """ it adds ndarrays horizontally """
         population_fitness = np.append(population_fitness, fit_offspring)
 
+        #todo: implement elitism - Dominique
         """ survival selection """
         index_threshold = np.random.uniform(0.02, 0.05, 1)[0]
         best_amount = int(population_length * index_threshold)
