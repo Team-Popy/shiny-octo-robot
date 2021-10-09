@@ -3,7 +3,7 @@
 values.mean() - values.std()
 """
 
-#todo: later hybridization
+# todo: later hybridization
 
 import sys
 
@@ -21,8 +21,8 @@ from pathlib import Path
 """ 'train' TO START THE EVOLUTION or 'test' TO TEST THE RESULTS  """
 choose_run_mode = 'train'
 
-crossover_method = "two_points"
-experiment_name = "enemy_test_GENERALIST_mutation_0.4"
+mutation_method = "two_points"
+experiment_name = "enemy_test_GENERALIST_debug_self"
 run_mode = "train"
 
 toolbox = base.Toolbox()
@@ -32,7 +32,9 @@ toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=0.1, indpb=0.4)
 lower_limit = -1
 upper_limit = 1
 
-population_length = 50
+mutation_rate = 0.2
+
+population_length = 10
 generations = 10
 crossover_threshold = 0.5
 n_hidden_neurons = 10
@@ -45,10 +47,9 @@ if headless:
 if not os.path.exists(experiment_name):
     os.makedirs(experiment_name)
 
-
 # initializes simulation in individual evolution mode, for single static enemy.
 env = Environment(experiment_name=experiment_name,
-                  enemies=[6, 8],
+                  enemies=[7, 8],
                   multiplemode="yes",
                   playermode="ai",
                   player_controller=player_controller(n_hidden_neurons),
@@ -61,7 +62,8 @@ ini = time.time()  # sets time marker
 
 n_vars = (env.get_num_sensors() + 1) * n_hidden_neurons + (n_hidden_neurons + 1) * 5
 
-#todo: decide if to use random seed
+
+# todo: decide if to use random seed
 
 def evaluate(x):
     return np.array(list(map(lambda y: simulation(env, y), x)))
@@ -107,7 +109,7 @@ def tournament_selection(population, fitness_for_tournament):
     parent_1_index = list(fitness_for_tournament).index(parent_1_fitness)
     parent_2_index = list(fitness_for_tournament).index(parent_2_fitness)
 
-    return population[parent_1_index], population[parent_2_index]
+    return population[parent_1_index], population[parent_2_index], parent_1_fitness, parent_2_fitness
 
 
 """ WEIGHTS INITIALIZATION """
@@ -129,16 +131,17 @@ def two_points_crossover(population_data, fitness_for_crossover):
     crossover_point = [first_point, second_point]
     total_offspring = []
 
-    for p in range(0, population_data.shape[0], 2):
+    for p in range(0, population_data.shape[0]):
         offspring_crossover = np.zeros((2, n_vars))
-        parent_1, parent_2 = tournament_selection(population_data, fitness_for_crossover)
+        parent_1, parent_2, parent_1_fitness, parent_2_fitness = tournament_selection(population_data,
+                                                                                      fitness_for_crossover)
 
         """ crossover """
         for m in crossover_point:
             parent_1, parent_2 = single_point_crossover(parent_1, parent_2, m)
 
         """ mutation """
-        total_offspring = mutate(offspring_crossover, parent_1, parent_2, total_offspring)
+        total_offspring = mutate_2(offspring_crossover, parent_1, parent_2, total_offspring)
 
     final_total_offspring = np.vstack(total_offspring)
     return final_total_offspring
@@ -165,6 +168,51 @@ def mutate(offspring_uniform, parent_1, parent_2, total_offspring):
     total_offspring.append(mutated_offspring_2)
 
     return total_offspring
+
+
+def mutate_2(offspring_uniform, parent_1, parent_2, total_offspring):
+    offspring_uniform[0] = parent_1.copy()
+    offspring_uniform[1] = parent_2.copy()
+
+    for i in range(0, len(offspring_uniform[0])):
+        if np.random.uniform(0, 1) <= mutation_rate:
+            offspring_uniform[0][i] = offspring_uniform[0][i] + np.random.normal(0, 1)
+
+    for i in range(0, len(offspring_uniform[1])):
+        if np.random.uniform(0, 1) <= mutation_rate:
+            offspring_uniform[1][i] = offspring_uniform[1][i] + np.random.normal(0, 1)
+
+    mutated_offspring_1 = offspring_uniform[0]
+    mutated_offspring_2 = offspring_uniform[1]
+
+    mutated_offspring_1 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_1)))
+    mutated_offspring_2 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_2)))
+
+    total_offspring.append(mutated_offspring_1)
+    total_offspring.append(mutated_offspring_2)
+
+    return total_offspring
+
+
+def mutate_self_adaptive(offspring, parent, parent_fitness, pop_fitness):
+
+    avg_population_fitness = np.average(pop_fitness)
+
+    global mutation_rate
+
+    if parent_fitness < avg_population_fitness:
+        mutation_rate += 0.1
+    else:
+        mutation_rate -= 0.1
+
+    for i in range(0, len(offspring)):
+        if random.random() <= mutation_rate:
+            offspring[i] = offspring[i] + np.random.normal(0, 1)
+
+    mutated_offspring = np.array(list(map(lambda y: limit_the_weights(y), offspring[0])))
+
+    return mutated_offspring
+
 
 # todo: fix the doomsday - Melis
 def remove_worst_and_add_diversity(input_pop, pop_length, population_fit):
@@ -269,7 +317,7 @@ else:
         """ it adds ndarrays horizontally """
         population_fitness = np.append(population_fitness, fit_offspring)
 
-        #todo: implement elitism - Dominique
+        # todo: implement elitism - Dominique
         """ survival selection """
         index_threshold = np.random.uniform(0.02, 0.05, 1)[0]
         best_amount = int(population_length * index_threshold)
