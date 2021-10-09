@@ -22,7 +22,7 @@ from pathlib import Path
 choose_run_mode = 'train'
 
 mutation_method = "two_points"
-experiment_name = "enemy_test_GENERALIST_debug_self"
+experiment_name = "enemy_test_GENERALIST_debug_self_random_formula"
 run_mode = "train"
 
 toolbox = base.Toolbox()
@@ -34,7 +34,7 @@ upper_limit = 1
 
 mutation_rate = 0.2
 
-population_length = 10
+population_length = 50
 generations = 10
 crossover_threshold = 0.5
 n_hidden_neurons = 10
@@ -131,7 +131,7 @@ def two_points_crossover(population_data, fitness_for_crossover):
     crossover_point = [first_point, second_point]
     total_offspring = []
 
-    for p in range(0, population_data.shape[0]):
+    for p in range(0, population_data.shape[0], 2):
         offspring_crossover = np.zeros((2, n_vars))
         parent_1, parent_2, parent_1_fitness, parent_2_fitness = tournament_selection(population_data,
                                                                                       fitness_for_crossover)
@@ -141,7 +141,8 @@ def two_points_crossover(population_data, fitness_for_crossover):
             parent_1, parent_2 = single_point_crossover(parent_1, parent_2, m)
 
         """ mutation """
-        total_offspring = mutate_2(offspring_crossover, parent_1, parent_2)
+        total_offspring = mutate_2(offspring_crossover, parent_1, parent_2, parent_1_fitness, parent_2_fitness,
+                                   fitness_for_crossover, total_offspring)
 
     final_total_offspring = np.vstack(total_offspring)
     return final_total_offspring
@@ -154,11 +155,9 @@ def single_point_crossover(parent_1, parent_2, crossover_point):
 
 
 # todo: implement two ways of mutation for our research question - Rumy
-def mutate(offspring_uniform, parent_1, parent_2):
+def mutate(offspring_uniform, parent_1, parent_2, total_offspring):
     offspring_uniform[0] = parent_1.copy()
     offspring_uniform[1] = parent_2.copy()
-
-    classically_mutated_offspring = []
 
     mutated_offspring_1 = toolbox.mutate(offspring_uniform[0])
     mutated_offspring_2 = toolbox.mutate(offspring_uniform[1])
@@ -166,21 +165,39 @@ def mutate(offspring_uniform, parent_1, parent_2):
     mutated_offspring_1 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_1[0])))
     mutated_offspring_2 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_2[0])))
 
-    classically_mutated_offspring.append(mutated_offspring_1)
-    classically_mutated_offspring.append(mutated_offspring_2)
+    total_offspring.append(mutated_offspring_1)
+    total_offspring.append(mutated_offspring_2)
 
-    return classically_mutated_offspring
+    return total_offspring
 
 
-def mutate_2(offspring_uniform, parent_1, parent_2):
+def mutate_2(offspring_uniform, parent_1, parent_2, parent_1_fitness, parent_2_fitness, fitness_for_crossover,
+             total_offspring):
     offspring_uniform[0] = parent_1.copy()
     offspring_uniform[1] = parent_2.copy()
 
-    mutated_offspring = []
+    avg_population_fitness = np.average(fitness_for_crossover)
+
+    global mutation_rate
+
+    best_fitness = np.argmax(fitness_for_crossover)
+    mutation_rate = (best_fitness - parent_1_fitness) / (best_fitness - avg_population_fitness) * 0.5
+
+    # if parent_1_fitness < avg_population_fitness:
+    #     mutation_rate += 0.1
+    # else:
+    #     mutation_rate -= 0.1
 
     for i in range(0, len(offspring_uniform[0])):
         if np.random.uniform(0, 1) <= mutation_rate:
             offspring_uniform[0][i] = offspring_uniform[0][i] + np.random.normal(0, 1)
+
+    mutation_rate = (best_fitness - parent_2_fitness) / (best_fitness - avg_population_fitness) * 0.5
+
+    # if parent_2_fitness < avg_population_fitness:
+    #     mutation_rate += 0.1
+    # else:
+    #     mutation_rate -= 0.1
 
     for i in range(0, len(offspring_uniform[1])):
         if np.random.uniform(0, 1) <= mutation_rate:
@@ -192,30 +209,29 @@ def mutate_2(offspring_uniform, parent_1, parent_2):
     mutated_offspring_1 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_1)))
     mutated_offspring_2 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_2)))
 
-    mutated_offspring.append(mutated_offspring_1)
-    mutated_offspring.append(mutated_offspring_2)
+    total_offspring.append(mutated_offspring_1)
+    total_offspring.append(mutated_offspring_2)
 
-    return mutated_offspring
+    return total_offspring
 
 
-def mutate_self_adaptive(offspring, parent, parent_fitness, pop_fitness):
-
-    avg_population_fitness = np.average(pop_fitness)
-
-    global mutation_rate
-
-    if parent_fitness < avg_population_fitness:
-        mutation_rate += 0.1
-    else:
-        mutation_rate -= 0.1
-
-    for i in range(0, len(offspring)):
-        if random.random() <= mutation_rate:
-            offspring[i] = offspring[i] + np.random.normal(0, 1)
-
-    mutated_offspring = np.array(list(map(lambda y: limit_the_weights(y), offspring[0])))
-
-    return mutated_offspring
+# def mutate_self_adaptive(offspring, parent, parent_fitness, pop_fitness):
+#     avg_population_fitness = np.average(pop_fitness)
+#
+#     global mutation_rate
+#
+#     if parent_fitness < avg_population_fitness:
+#         mutation_rate += 0.1
+#     else:
+#         mutation_rate -= 0.1
+#
+#     for i in range(0, len(offspring)):
+#         if random.random() <= mutation_rate:
+#             offspring[i] = offspring[i] + np.random.normal(0, 1)
+#
+#     mutated_offspring = np.array(list(map(lambda y: limit_the_weights(y), offspring[0])))
+#
+#     return mutated_offspring
 
 
 # todo: fix the doomsday - Melis
