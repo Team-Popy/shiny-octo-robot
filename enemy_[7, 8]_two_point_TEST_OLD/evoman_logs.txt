@@ -12,11 +12,11 @@ MESSAGE: Pygame initialized for simulation.
 
 # contact hurt (training agent) # : player
 
-multiple mode: yes
+multiple mode: no
 
-enemies list: 6 8
+enemies list: 8
 
-current enemy: 6
+current enemy: 8
 
 player mode: ai
 
@@ -48,47 +48,13 @@ save logs: yes
 
 ########## Simulation state - END ###########
 
-PARAMETER CHANGE: enemies = [6, 8]
+PARAMETER CHANGE: speed = normal
 
-PARAMETER CHANGE: timeexpire = 3000
-
-PARAMETER CHANGE: level = 2
-
-PARAMETER CHANGE: enemyn = 8
-
-PARAMETER CHANGE: overturetime = 100
-
-PARAMETER CHANGE: playermode = ai
-
-PARAMETER CHANGE: enemymode = static
-
-PARAMETER CHANGE: contacthurt = player
-
-PARAMETER CHANGE: clockprec = low
-
-PARAMETER CHANGE: inputscoded = no
-
-PARAMETER CHANGE: randomini = yes
-
-PARAMETER CHANGE: multiplemode = yes
-
-PARAMETER CHANGE: speed = fastest
-
-PARAMETER CHANGE: loadplayer = yes
-
-PARAMETER CHANGE: loadenemy = yes
-
-PARAMETER CHANGE: sound = off
-
-PARAMETER CHANGE: logs = on
-
-PARAMETER CHANGE: savelogs = yes
-
-MESSAGE: state has been loaded.
+RUN: run status: enemy: 8; fitness: 86.43196501081938; player life: 23.800000000000246; enemy life: 0; time: 383
 
 ########## Simulation state - INI ###########
 
-# solutions # : LOADED 
+# solutions # : EMPTY 
 
 # sensors # : 20
 
@@ -96,9 +62,9 @@ MESSAGE: state has been loaded.
 
 # contact hurt (training agent) # : player
 
-multiple mode: yes
+multiple mode: no
 
-enemies list: 6 8
+enemies list: 8
 
 current enemy: 8
 
@@ -116,7 +82,7 @@ random initialization: yes
 
 expiration time: 3000
 
-speed: fastest
+speed: normal
 
 load player: yes
 

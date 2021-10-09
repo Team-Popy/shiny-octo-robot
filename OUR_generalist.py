@@ -3,7 +3,7 @@
 values.mean() - values.std()
 """
 
-#todo: later hybridization
+#todo: later hybridization maybe?
 
 import sys
 
@@ -22,17 +22,17 @@ from pathlib import Path
 choose_run_mode = 'train'
 
 crossover_method = "two_points"
-experiment_name = "enemy_test_GENERALIST_mutation_0.4"
+experiment_name = "enemy_test_GENERALIST_mutation_0.3_parents_changed"
 run_mode = "train"
 
 toolbox = base.Toolbox()
 toolbox.register("mate", tools.cxUniform, indpb=0.1)
-toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=0.1, indpb=0.4)
+toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=0.1, indpb=0.3)
 
 lower_limit = -1
 upper_limit = 1
 
-population_length = 50
+population_length = 100
 generations = 10
 crossover_threshold = 0.5
 n_hidden_neurons = 10
@@ -67,6 +67,8 @@ def evaluate(x):
     return np.array(list(map(lambda y: simulation(env, y), x)))
 
 
+#todo: what to save for plots and how
+
 # runs simulation
 def simulation(environment, x):
     fitness, player_life, enemy_life, game_time = environment.play(pcont=x)
@@ -85,27 +87,30 @@ def normalization(x, pop_fitness):
     return x_norm
 
 
-# todo: make it better for multi objective EA - Alicja
 def tournament_selection(population, fitness_for_tournament):
     # choosing 4 individuals from the population at random
-    random_list = random.sample(range(0, population.shape[0]), 4)
-    random_val_1 = random_list[0]
-    random_val_2 = random_list[1]
-    random_val_3 = random_list[2]
-    random_val_4 = random_list[3]
+    def get_best_parent():
+        random_list = random.sample(range(0, population.shape[0]), 4)
+        random_val_1 = random_list[0]
+        random_val_2 = random_list[1]
+        random_val_3 = random_list[2]
+        random_val_4 = random_list[3]
 
-    first_fitness = fitness_for_tournament[random_val_1]
-    second_fitness = fitness_for_tournament[random_val_2]
-    third_fitness = fitness_for_tournament[random_val_3]
-    fourth_fitness = fitness_for_tournament[random_val_4]
+        first_fitness = fitness_for_tournament[random_val_1]
+        second_fitness = fitness_for_tournament[random_val_2]
+        third_fitness = fitness_for_tournament[random_val_3]
+        fourth_fitness = fitness_for_tournament[random_val_4]
 
-    sorted_fitness = [first_fitness, second_fitness, third_fitness, fourth_fitness]
-    sorted_fitness.sort(reverse=True)
-    parent_1_fitness = sorted_fitness[0]
-    parent_2_fitness = sorted_fitness[2]
+        sorted_fitness = [first_fitness, second_fitness, third_fitness, fourth_fitness]
+        sorted_fitness.sort(reverse=True)
+        best_parent = sorted_fitness[0]
+        return best_parent
 
-    parent_1_index = list(fitness_for_tournament).index(parent_1_fitness)
-    parent_2_index = list(fitness_for_tournament).index(parent_2_fitness)
+    parent_1 = get_best_parent()
+    parent_2 = get_best_parent()
+
+    parent_1_index = list(fitness_for_tournament).index(parent_1)
+    parent_2_index = list(fitness_for_tournament).index(parent_2)
 
     return population[parent_1_index], population[parent_2_index]
 
@@ -305,7 +310,7 @@ else:
             last_best = current_best
             not_improving = 0
 
-        if not_improving >= 3:
+        if not_improving >= 10:
             whole_population, population_fitness = remove_worst_and_add_diversity(whole_population, population_length,
                                                                                   population_fitness)
             not_improving = 0
