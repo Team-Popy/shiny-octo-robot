@@ -3,7 +3,7 @@
 values.mean() - values.std()
 """
 
-#todo: later hybridization
+#todo: later hybridization maybe?
 
 import sys
 
@@ -32,7 +32,7 @@ toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=0.1, indpb=0.2)
 lower_limit = -1
 upper_limit = 1
 
-population_length = 50
+population_length = 100
 generations = 10
 crossover_threshold = 0.5
 n_hidden_neurons = 10
@@ -67,6 +67,8 @@ def evaluate(x):
     return np.array(list(map(lambda y: simulation(env, y), x)))
 
 
+#todo: what to save for plots and how
+
 # runs simulation
 def simulation(environment, x):
     fitness, player_life, enemy_life, game_time = environment.play(pcont=x)
@@ -85,7 +87,6 @@ def normalization(x, pop_fitness):
     return x_norm
 
 
-# todo: make it better for multi objective EA - Alicja
 def tournament_selection(population, fitness_for_tournament):
     # choosing 4 individuals from the population at random
     def get_best_parent():
@@ -353,7 +354,7 @@ else:
             last_best = current_best
             not_improving = 0
 
-        if not_improving >= 3:
+        if not_improving >= 10:
             whole_population, population_fitness = remove_worst_and_add_diversity(whole_population, population_length,
                                                                                   population_fitness)
             not_improving = 0
