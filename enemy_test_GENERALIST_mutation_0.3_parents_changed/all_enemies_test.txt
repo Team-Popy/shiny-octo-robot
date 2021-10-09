@@ -1,0 +1,24 @@
+
+-----------------------------------------
+enemy: 1, fitness: 12.882006187583244, player: 0.0, enemy: 80.0, time: 167.0
+enemy: 1, fitness: 30.25699681219052, player: 0.0, enemy: 60.0, time: 312.0
+enemy: 1, fitness: 12.882006187583244, player: 0.0, enemy: 80.0, time: 167.0
+enemy: 1, fitness: 39.17105438238979, player: 0.0, enemy: 50.0, time: 340.0
+enemy: 1, fitness: 30.25699681219052, player: 0.0, enemy: 60.0, time: 312.0
+-----------------------------------------
+enemy: 2, fitness: 12.82385026742617, player: 0.0, enemy: 80.0, time: 177.0
+enemy: 2, fitness: 30.662461920298682, player: 0.0, enemy: 60.0, time: 208.0
+enemy: 2, fitness: 30.662461920298682, player: 0.0, enemy: 60.0, time: 208.0
+enemy: 2, fitness: 21.67699002086159, player: 0.0, enemy: 70.0, time: 205.0
+enemy: 2, fitness: 39.39052820481504, player: 0.0, enemy: 50.0, time: 273.0
+-----------------------------------------
+enemy: 3, fitness: 12.17399989261955, player: 0.0, enemy: 80.0, time: 339.0
+enemy: 3, fitness: 65.5606496288999, player: 0.0, enemy: 20.0, time: 626.0
+enemy: 3, fitness: 12.247427361174367, player: 0.0, enemy: 80.0, time: 315.0
+enemy: 3, fitness: 12.17399989261955, player: 0.0, enemy: 80.0, time: 339.0
+enemy: 3, fitness: 30.051965010819355, player: 0.0, enemy: 60.0, time: 383.0
+-----------------------------------------
+enemy: 4, fitness: 38.70843086044168, player: 0.0, enemy: 50.0, time: 540.0
+enemy: 4, fitness: 38.710284429091004, player: 0.0, enemy: 50.0, time: 539.0
+enemy: 4, fitness: 38.447492112965406, player: 0.0, enemy: 50.0, time: 701.0
+enemy: 4, fitness: 38.70843086044168, player: 0.0, enemy: 50.0, time: 540.0

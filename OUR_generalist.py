@@ -16,30 +16,29 @@ import os
 from deap import base
 import random
 from deap import tools
+import operator
 from pathlib import Path
 
-""" 'train' TO START THE EVOLUTION or 'test' TO TEST THE RESULTS  """
-choose_run_mode = 'train'
-
-mutation_method = "two_points"
-experiment_name = "enemy_test_GENERALIST_debug_self_random_formula"
+""" set a train or a test mode """
 run_mode = "train"
 
+""" set experiment name """
+experiment_name = "enemy_test_GENERALIST_merged"
+
+""" set mutation settings """
 toolbox = base.Toolbox()
-toolbox.register("mate", tools.cxUniform, indpb=0.1)
-toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=0.1, indpb=0.4)
+toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=0.1, indpb=0.2)
 
-lower_limit = -1
-upper_limit = 1
-
-mutation_rate = 0.2
-
+""" set experiment parameters """
 population_length = 50
 generations = 10
-crossover_threshold = 0.5
-n_hidden_neurons = 10
 
-# removing the visuals
+""" constant parameters """
+n_hidden_neurons = 10
+lower_limit = -1
+upper_limit = 1
+mutation_rate = 0.2
+
 headless = True
 if headless:
     os.environ["SDL_VIDEODRIVER"] = "dummy"
@@ -69,7 +68,6 @@ def evaluate(x):
     return np.array(list(map(lambda y: simulation(env, y), x)))
 
 
-# runs simulation
 def simulation(environment, x):
     fitness, player_life, enemy_life, game_time = environment.play(pcont=x)
     return fitness
@@ -87,29 +85,26 @@ def normalization(x, pop_fitness):
     return x_norm
 
 
-# todo: make it better for multi objective EA - Alicja
-def tournament_selection(population, fitness_for_tournament):
-    # choosing 4 individuals from the population at random
-    random_list = random.sample(range(0, population.shape[0]), 4)
+def get_best_parent_for_tournament(population_data, fitness_data):
+    fitness_parents_dict = {}
+    random_list = random.sample(range(0, population_data.shape[0]), 4)
     random_val_1 = random_list[0]
     random_val_2 = random_list[1]
     random_val_3 = random_list[2]
     random_val_4 = random_list[3]
+    fitness_parents_dict = {random_val_1: fitness_data[random_val_1], random_val_2: fitness_data[random_val_2],
+                            random_val_3: fitness_data[random_val_3], random_val_4: fitness_data[random_val_4]}
 
-    first_fitness = fitness_for_tournament[random_val_1]
-    second_fitness = fitness_for_tournament[random_val_2]
-    third_fitness = fitness_for_tournament[random_val_3]
-    fourth_fitness = fitness_for_tournament[random_val_4]
+    print(fitness_parents_dict)
+    print(list(sorted(fitness_parents_dict, key=lambda k: (fitness_parents_dict[k], k))))
+    max_fitness_index = list(sorted(fitness_parents_dict, key=lambda k: (fitness_parents_dict[k], k)))[-1]
+    return population_data[max_fitness_index]
 
-    sorted_fitness = [first_fitness, second_fitness, third_fitness, fourth_fitness]
-    sorted_fitness.sort(reverse=True)
-    parent_1_fitness = sorted_fitness[0]
-    parent_2_fitness = sorted_fitness[2]
 
-    parent_1_index = list(fitness_for_tournament).index(parent_1_fitness)
-    parent_2_index = list(fitness_for_tournament).index(parent_2_fitness)
-
-    return population[parent_1_index], population[parent_2_index], parent_1_fitness, parent_2_fitness
+def tournament_selection(population, fitness_for_tournament):
+    parent_1 = get_best_parent_for_tournament(population, fitness_for_tournament)
+    parent_2 = get_best_parent_for_tournament(population, fitness_for_tournament)
+    return parent_1, parent_2
 
 
 """ WEIGHTS INITIALIZATION """
@@ -239,16 +234,86 @@ def remove_worst_and_add_diversity(input_pop, pop_length, population_fit):
     remove_n_samples = int(pop_length / 4)
     worst_fitness_scores_indexes = np.argpartition(population_fit, remove_n_samples)[:remove_n_samples]
 
-    cleaned_pop = np.delete(input_pop, worst_fitness_scores_indexes, 0)
-    cleaned_fitness = np.delete(population_fit, worst_fitness_scores_indexes, 0)
+def replacement(population, population_fit):
+    print("REPLACEMENT !!!!!!!!!!!!!")
+    parent_1, parent_2 = tournament_selection(population, population_fit)
 
-    new_random_samples = np.random.uniform(lower_limit, upper_limit, (remove_n_samples, n_vars))
-    fitness_for_random = evaluate(new_random_samples)
+    first_point = int(np.random.uniform(0, n_vars, 1)[0])
+    second_point = int(np.random.uniform(0, n_vars, 1)[0])
+    crossover_point = [first_point, second_point]
+    empty_offspring = []
 
-    new_pop = np.vstack((new_random_samples, cleaned_pop))
-    new_fitness = np.hstack((fitness_for_random, cleaned_fitness))
+    offspring_crossover = np.zeros((2, n_vars))
+    for m in crossover_point:
+        parent_1, parent_2 = single_point_crossover(parent_1, parent_2, m)
 
-    return new_pop, new_fitness
+    total_offspring = mutate(offspring_crossover, parent_1, parent_2, empty_offspring)
+    final_offspring = total_offspring[0]
+
+    new_offspring_fitness = evaluate([final_offspring])[0]
+    random_index = random.sample(range(0, population.shape[0]), 1)
+    random_fitness = population_fit[random_index][0]
+
+    if random_fitness < new_offspring_fitness:
+        cleaned_pop = np.delete(population, random_index, 0)
+        cleaned_fitness = np.delete(population_fit, random_index, 0)
+        new_pop = np.vstack((final_offspring, cleaned_pop))
+        new_fitness = np.hstack((new_offspring_fitness, cleaned_fitness))
+        population = new_pop.copy()
+        population_fit = new_fitness.copy()
+        print("END")
+
+    return population, population_fit
+
+
+def elitism_survival_selection(population_data, fitness_data):
+    elite_threshold = 0.10
+
+    # fitnesses
+    elite_amount = int(population_length * elite_threshold)
+    elite_indices = np.argpartition(fitness_data, -elite_amount)[-elite_amount:]
+    elite_fitness = fitness_data[elite_indices]
+
+    offspring_amount = int(population_length * (1 - elite_threshold))
+    offspring_indices = np.argpartition(fit_offspring, -offspring_amount)[-offspring_amount:]
+    offspring_survivals_fitness = fit_offspring[offspring_indices]
+
+    final_fitness = np.append(elite_fitness, offspring_survivals_fitness)
+
+    # solutions
+    elite_individuals = population_data[elite_indices]
+    offspring_survivals = offspring[offspring_indices]
+
+    final_population = np.vstack((elite_individuals, offspring_survivals))
+
+    return final_fitness, final_population
+
+
+def probability_survival_selection(population_data, fitness_data, offspring_data):
+    """ combine old population with the offspring """
+    population_data = np.vstack((population_data, offspring_data))
+
+    """ it adds ndarrays horizontally """
+    fitness_data = np.append(fitness_data, fit_offspring)
+    index_threshold = np.random.uniform(0.02, 0.05, 1)[0]
+    best_amount = int(population_length * index_threshold)
+    rest_offspring = int(population_length - best_amount)
+
+    best_fitness_scores_indexes = np.argpartition(fitness_data, -best_amount)[-best_amount:]
+
+    population_fitness_copy = fitness_data.copy()
+    population_fitness_normalized = np.array(
+        list(map(lambda y: normalization(y, population_fitness_copy), fitness_data)))
+
+    probability = population_fitness_normalized / population_fitness_normalized.sum()
+    randomness_population = np.random.choice(population_data.shape[0], rest_offspring, p=probability,
+                                             replace=False)
+
+    final_indexes = np.hstack((randomness_population, best_fitness_scores_indexes))
+
+    final_population = population_data[final_indexes]
+    final_fitness = fitness_data[final_indexes].copy()
+    return final_population, final_fitness
 
 
 # loads file with the best solution for testing
@@ -331,56 +396,21 @@ else:
         """ then evaluate the fitness scores """
         fit_offspring = evaluate(offspring)
 
-        """ combine old population with the offspring """
-        whole_population = np.vstack((whole_population, offspring))
+        """ Choose survival selection method """
 
-        """ it adds ndarrays horizontally """
-        population_fitness = np.append(population_fitness, fit_offspring)
+        #todo: debug elitism
+        #whole_population, population_fitness = elitism_survival_selection(whole_population, population_fitness)
+        whole_population, population_fitness = probability_survival_selection(whole_population, population_fitness,
+                                                                              offspring)
 
-        # todo: implement elitism - Dominique
-        """ survival selection """
-        index_threshold = np.random.uniform(0.02, 0.05, 1)[0]
-        best_amount = int(population_length * index_threshold)
-        rest_offspring = int(population_length - best_amount)
-
-        best_fitness_scores_indexes = np.argpartition(population_fitness, -best_amount)[-best_amount:]
-
-        population_fitness_copy = population_fitness.copy()
-        population_fitness_normalized = np.array(
-            list(map(lambda y: normalization(y, population_fitness_copy), population_fitness)))
-
-        probability = population_fitness_normalized / population_fitness_normalized.sum()
-        randomness_population = np.random.choice(whole_population.shape[0], rest_offspring, p=probability,
-                                                 replace=False)
-
-        final_indexes = np.hstack((randomness_population, best_fitness_scores_indexes))
-
-        whole_population = whole_population[final_indexes]
-        population_fitness = population_fitness[final_indexes].copy()
+        """ does replacement """
+        whole_population, population_fitness = replacement(whole_population, population_fitness)
 
         """ statistics about the last fitness """
         best = np.argmax(population_fitness)
         std = np.std(population_fitness)
         current_mean = np.mean(population_fitness)
         current_best = np.argmax(population_fitness)
-        mean = np.mean(population_fitness)
-
-        """ using mean to decide on additional steps for the diversity """
-
-        if current_best <= last_best:
-            not_improving += 1
-        else:
-            last_best = current_best
-            not_improving = 0
-
-        if not_improving >= 3:
-            whole_population, population_fitness = remove_worst_and_add_diversity(whole_population, population_length,
-                                                                                  population_fitness)
-            not_improving = 0
-
-        """ statistics about the last fitness """
-        best = np.argmax(population_fitness)
-        std = np.std(population_fitness)
         mean = np.mean(population_fitness)
 
         # saves results

@@ -20,12 +20,12 @@ def run_the_whole_experiment(enemy_number, crossover_method, run_mode, iteration
     lower_limit = -1
     upper_limit = 1
 
-    population_length = 100
-    generations = 30
+    population_length = 50
+    generations = 10
     crossover_threshold = 0.5
     n_hidden_neurons = 10
 
-    experiment_name = "enemy_" + str(enemy_number) + "_" + crossover_method + "_" + str(iteration_num)
+    experiment_name = "enemy_" + str(enemy_number) + "_" + crossover_method + "_" + "TEST_OLD"
 
     # removing the visuals
     headless = True
@@ -38,8 +38,9 @@ def run_the_whole_experiment(enemy_number, crossover_method, run_mode, iteration
     """ We chose 2,5, and 8 enemies """
     # initializes simulation in individual evolution mode, for single static enemy.
     env = Environment(experiment_name=experiment_name,
-                      enemies=[enemy_number],
+                      enemies=enemy_number,
                       playermode="ai",
+                      multiplemode="yes",
                       player_controller=player_controller(n_hidden_neurons),
                       enemymode="static",
                       level=2,
@@ -192,8 +193,6 @@ def run_the_whole_experiment(enemy_number, crossover_method, run_mode, iteration
         test_scores = open(filename, append_write)
         test_scores.writelines('\n' + str(fitness_result))
         test_scores.close()
-        if iteration_num == 10 and test_number == 5:
-            sys.exit(0)
 
     else:
         # initializes population loading old solutions or generating new ones
@@ -343,16 +342,16 @@ def run_the_whole_experiment(enemy_number, crossover_method, run_mode, iteration
 
 
 """ 'train' TO START THE EVOLUTION or 'test' TO TEST THE RESULTS  """
-choose_run_mode = 'train'
+choose_run_mode = 'test'
 
 """ CHOOSE THE NAME OF THE CROSSOVER METHOD 'uniform' or 'two_points' """
-cross_method = "uniform"
-enemy_num = 7
+cross_method = "two_point"
+enemy_num = [7, 8]
 
 if choose_run_mode == "test":
-    for j in range(1, 11):
-        for i in range(1, 6):
-            run_the_whole_experiment(enemy_num, cross_method, choose_run_mode, j, i)
+    # for j in range(1, 11):
+    #     for i in range(1, 6):
+    run_the_whole_experiment(enemy_num, cross_method, choose_run_mode, 0, 0)
 elif choose_run_mode == "train":
-    for i in range(1, 11):
-        run_the_whole_experiment(enemy_num, cross_method, choose_run_mode, i, 0)
+    for i in range(1, 5):
+        run_the_whole_experiment(enemy_num, cross_method, choose_run_mode, 0, 0)
