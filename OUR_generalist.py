@@ -22,12 +22,12 @@ from pathlib import Path
 choose_run_mode = 'train'
 
 crossover_method = "two_points"
-experiment_name = "enemy_test_GENERALIST_mutation_0.3_parents_changed"
+experiment_name = "enemy_test_GENERALIST_replacement"
 run_mode = "train"
 
 toolbox = base.Toolbox()
 toolbox.register("mate", tools.cxUniform, indpb=0.1)
-toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=0.1, indpb=0.3)
+toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=0.1, indpb=0.2)
 
 lower_limit = -1
 upper_limit = 1
@@ -172,20 +172,62 @@ def mutate(offspring_uniform, parent_1, parent_2, total_offspring):
     return total_offspring
 
 # todo: fix the doomsday - Melis
-def remove_worst_and_add_diversity(input_pop, pop_length, population_fit):
-    remove_n_samples = int(pop_length / 4)
-    worst_fitness_scores_indexes = np.argpartition(population_fit, remove_n_samples)[:remove_n_samples]
+# def remove_worst_and_add_diversity(input_pop, pop_length, population_fit):
 
-    cleaned_pop = np.delete(input_pop, worst_fitness_scores_indexes, 0)
-    cleaned_fitness = np.delete(population_fit, worst_fitness_scores_indexes, 0)
+    # remove_n_samples = int(pop_length / 4)
+    # worst_fitness_scores_indexes = np.argpartition(population_fit, remove_n_samples)[:remove_n_samples]
 
-    new_random_samples = np.random.uniform(lower_limit, upper_limit, (remove_n_samples, n_vars))
-    fitness_for_random = evaluate(new_random_samples)
+    # cleaned_pop = np.delete(input_pop, worst_fitness_scores_indexes, 0)
+    # cleaned_fitness = np.delete(population_fit, worst_fitness_scores_indexes, 0)
 
-    new_pop = np.vstack((new_random_samples, cleaned_pop))
-    new_fitness = np.hstack((fitness_for_random, cleaned_fitness))
+    # new_random_samples = np.random.uniform(lower_limit, upper_limit, (remove_n_samples, n_vars))
+    # fitness_for_random = evaluate(new_random_samples)
 
-    return new_pop, new_fitness
+    # new_pop = np.vstack((new_random_samples, cleaned_pop))
+    # new_fitness = np.hstack((fitness_for_random, cleaned_fitness))
+
+    # return new_pop, new_fitness
+
+# MELIS **************************************************************
+def replacement(population, population_fit):
+    # todo : Select two parents from the population
+    parent_1, parent_2 = tournament_selection(population,population_fit)
+
+    first_point = int(np.random.uniform(0, n_vars, 1)[0])
+    second_point = int(np.random.uniform(0, n_vars, 1)[0])
+    crossover_point = [first_point, second_point]
+    empty_offspring = []
+
+    #todo : Create an offspring using crossover and mutation
+    offspring_crossover = np.zeros((2, n_vars))
+    for m in crossover_point:
+        parent_1, parent_2 = single_point_crossover(parent_1, parent_2, m)
+
+    total_offspring = mutate(offspring_crossover, parent_1, parent_2, empty_offspring)
+    final_offspring = total_offspring[0]
+
+    #todo: Evaluate the offspring with the fitness function.
+    new_offspring_fitness = evaluate([final_offspring])[0]
+
+    #todo:  Select an individual in the population, which may be replaced by the offspring
+    random_index = random.sample(range(0, population.shape[0]), 1)
+
+     #todo: Decide if this individual will be replaced
+    #todo: A widely used combination is to replace the worst individual only if the new individual is better
+    random_fitness = population_fit[random_index][0]
+
+    if random_fitness < new_offspring_fitness:
+        cleaned_pop = np.delete(population, random_index, 0)
+        cleaned_fitness = np.delete(population_fit, random_index, 0)
+
+        new_pop = np.vstack((final_offspring, cleaned_pop))
+        new_fitness = np.hstack((new_offspring_fitness, cleaned_fitness))
+
+        population = new_pop.copy()
+        population_fit = new_fitness.copy()
+        print("END")
+
+    return population, population_fit
 
 
 # loads file with the best solution for testing
@@ -261,6 +303,8 @@ else:
     for i in range(ini_g + 1, generations):
         print(ini_g)
         print(f"!!!!!!!!!!!! generation number {i}")
+
+        replacement(whole_population, population_fitness)
 
         """ choosing crossover_method """
         offspring = two_points_crossover(whole_population, population_fitness)
