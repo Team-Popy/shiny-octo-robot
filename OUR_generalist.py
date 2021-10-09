@@ -136,8 +136,9 @@ def two_points_crossover(population_data, fitness_for_crossover):
             parent_1, parent_2 = single_point_crossover(parent_1, parent_2, m)
 
         """ mutation """
-        total_offspring = mutate_2(offspring_crossover, parent_1, parent_2, parent_1_fitness, parent_2_fitness,
-                                   fitness_for_crossover, total_offspring)
+        total_offspring = mutate_self_adapted(offspring_crossover, parent_1, parent_2, parent_1_fitness,
+                                              parent_2_fitness,
+                                              fitness_for_crossover, total_offspring)
 
     final_total_offspring = np.vstack(total_offspring)
     return final_total_offspring
@@ -166,8 +167,9 @@ def mutate(offspring_uniform, parent_1, parent_2, total_offspring):
     return total_offspring
 
 
-def mutate_2(offspring_uniform, parent_1, parent_2, parent_1_fitness, parent_2_fitness, fitness_for_crossover,
-             total_offspring):
+def mutate_self_adapted(offspring_uniform, parent_1, parent_2, parent_1_fitness, parent_2_fitness,
+                        fitness_for_crossover,
+                        total_offspring):
     offspring_uniform[0] = parent_1.copy()
     offspring_uniform[1] = parent_2.copy()
 
@@ -210,30 +212,7 @@ def mutate_2(offspring_uniform, parent_1, parent_2, parent_1_fitness, parent_2_f
     return total_offspring
 
 
-# def mutate_self_adaptive(offspring, parent, parent_fitness, pop_fitness):
-#     avg_population_fitness = np.average(pop_fitness)
-#
-#     global mutation_rate
-#
-#     if parent_fitness < avg_population_fitness:
-#         mutation_rate += 0.1
-#     else:
-#         mutation_rate -= 0.1
-#
-#     for i in range(0, len(offspring)):
-#         if random.random() <= mutation_rate:
-#             offspring[i] = offspring[i] + np.random.normal(0, 1)
-#
-#     mutated_offspring = np.array(list(map(lambda y: limit_the_weights(y), offspring[0])))
-#
-#     return mutated_offspring
-
-
 # todo: fix the doomsday - Melis
-def remove_worst_and_add_diversity(input_pop, pop_length, population_fit):
-    remove_n_samples = int(pop_length / 4)
-    worst_fitness_scores_indexes = np.argpartition(population_fit, remove_n_samples)[:remove_n_samples]
-
 def replacement(population, population_fit):
     print("REPLACEMENT !!!!!!!!!!!!!")
     parent_1, parent_2 = tournament_selection(population, population_fit)
@@ -398,8 +377,8 @@ else:
 
         """ Choose survival selection method """
 
-        #todo: debug elitism
-        #whole_population, population_fitness = elitism_survival_selection(whole_population, population_fitness)
+        # todo: debug elitism
+        # whole_population, population_fitness = elitism_survival_selection(whole_population, population_fitness)
         whole_population, population_fitness = probability_survival_selection(whole_population, population_fitness,
                                                                               offspring)
 
