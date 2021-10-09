@@ -141,7 +141,7 @@ def two_points_crossover(population_data, fitness_for_crossover):
             parent_1, parent_2 = single_point_crossover(parent_1, parent_2, m)
 
         """ mutation """
-        total_offspring = mutate_2(offspring_crossover, parent_1, parent_2, total_offspring)
+        total_offspring = mutate_2(offspring_crossover, parent_1, parent_2)
 
     final_total_offspring = np.vstack(total_offspring)
     return final_total_offspring
@@ -154,9 +154,11 @@ def single_point_crossover(parent_1, parent_2, crossover_point):
 
 
 # todo: implement two ways of mutation for our research question - Rumy
-def mutate(offspring_uniform, parent_1, parent_2, total_offspring):
+def mutate(offspring_uniform, parent_1, parent_2):
     offspring_uniform[0] = parent_1.copy()
     offspring_uniform[1] = parent_2.copy()
+
+    classically_mutated_offspring = []
 
     mutated_offspring_1 = toolbox.mutate(offspring_uniform[0])
     mutated_offspring_2 = toolbox.mutate(offspring_uniform[1])
@@ -164,15 +166,17 @@ def mutate(offspring_uniform, parent_1, parent_2, total_offspring):
     mutated_offspring_1 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_1[0])))
     mutated_offspring_2 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_2[0])))
 
-    total_offspring.append(mutated_offspring_1)
-    total_offspring.append(mutated_offspring_2)
+    classically_mutated_offspring.append(mutated_offspring_1)
+    classically_mutated_offspring.append(mutated_offspring_2)
 
-    return total_offspring
+    return classically_mutated_offspring
 
 
-def mutate_2(offspring_uniform, parent_1, parent_2, total_offspring):
+def mutate_2(offspring_uniform, parent_1, parent_2):
     offspring_uniform[0] = parent_1.copy()
     offspring_uniform[1] = parent_2.copy()
+
+    mutated_offspring = []
 
     for i in range(0, len(offspring_uniform[0])):
         if np.random.uniform(0, 1) <= mutation_rate:
@@ -188,10 +192,10 @@ def mutate_2(offspring_uniform, parent_1, parent_2, total_offspring):
     mutated_offspring_1 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_1)))
     mutated_offspring_2 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_2)))
 
-    total_offspring.append(mutated_offspring_1)
-    total_offspring.append(mutated_offspring_2)
+    mutated_offspring.append(mutated_offspring_1)
+    mutated_offspring.append(mutated_offspring_2)
 
-    return total_offspring
+    return mutated_offspring
 
 
 def mutate_self_adaptive(offspring, parent, parent_fitness, pop_fitness):
