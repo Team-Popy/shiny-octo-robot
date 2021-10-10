@@ -4,6 +4,7 @@ values.mean() - values.std()
 """
 
 # todo: later hybridization
+#todo: check results when starting with init pop from previous task
 
 import sys
 
@@ -23,7 +24,7 @@ from pathlib import Path
 run_mode = "train"
 
 """ set survival method """
-survival_method = "probability"
+survival_method = "elitism"
 
 """ set experiment name """
 experiment_name = "enemy_7_8_" + survival_method + "_normal_mutation"
@@ -229,6 +230,8 @@ def replacement(population, population_fit):
     total_offspring = mutate(offspring_crossover, parent_1, parent_2, empty_offspring)
     final_offspring = total_offspring[0]
 
+    #todo: implement second crossover to do primitive hybridization - local search
+
     new_offspring_fitness = evaluate([final_offspring])[0]
     random_index = random.sample(range(0, population.shape[0]), 1)
     random_fitness = population_fit[random_index][0]
@@ -243,6 +246,7 @@ def replacement(population, population_fit):
     return population, population_fit
 
 
+#todo: improve it (Melis) or try different method (Alicja)
 def elitism_survival_selection(population_data, fitness_data):
     elite_threshold = 0.10
 
@@ -374,6 +378,9 @@ else:
         """ then evaluate the fitness scores """
         fit_offspring = evaluate(offspring)
 
+        """ does replacement """
+        whole_population, population_fitness = replacement(whole_population, population_fitness)
+
         """ Choose survival selection method """
         if survival_method == "elitism":
             whole_population, population_fitness = elitism_survival_selection(whole_population, population_fitness)
@@ -382,8 +389,6 @@ else:
             whole_population, population_fitness = probability_survival_selection(whole_population, population_fitness,
                                                                                  offspring)
 
-        """ does replacement """
-        whole_population, population_fitness = replacement(whole_population, population_fitness)
 
         """ statistics about the last fitness """
         best = np.argmax(population_fitness)
