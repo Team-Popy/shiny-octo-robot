@@ -22,8 +22,11 @@ from pathlib import Path
 """ set a train or a test mode """
 run_mode = "train"
 
+""" set survival method """
+survival_method = "probability"
+
 """ set experiment name """
-experiment_name = "enemy_7_8_elitism"
+experiment_name = "enemy_7_8_" + survival_method + "_normal_mutation"
 
 """ set mutation settings """
 toolbox = base.Toolbox()
@@ -94,17 +97,14 @@ def get_best_parent_for_tournament(population_data, fitness_data):
     random_val_4 = random_list[3]
     fitness_parents_dict = {random_val_1: fitness_data[random_val_1], random_val_2: fitness_data[random_val_2],
                             random_val_3: fitness_data[random_val_3], random_val_4: fitness_data[random_val_4]}
-
-    print(fitness_parents_dict)
     max_fitness_index = list(sorted(fitness_parents_dict, key=lambda k: (fitness_parents_dict[k], k)))[-1]
     max_fitness = fitness_parents_dict[max_fitness_index]
     return population_data[max_fitness_index], max_fitness
 
 
 def tournament_selection(population, fitness_for_tournament):
-    parent_1 = get_best_parent_for_tournament(population, fitness_for_tournament)
-    parent_2 = get_best_parent_for_tournament(population, fitness_for_tournament)
-    return parent_1, parent_2
+    final_parent, parent_fitness = get_best_parent_for_tournament(population, fitness_for_tournament)
+    return final_parent, parent_fitness
 
 
 """ WEIGHTS INITIALIZATION """
@@ -136,9 +136,10 @@ def two_points_crossover(population_data, fitness_for_crossover):
             parent_1, parent_2 = single_point_crossover(parent_1, parent_2, m)
 
         """ mutation """
-        total_offspring = mutate_self_adapted(offspring_crossover, parent_1, parent_2, parent_1_fitness,
-                                              parent_2_fitness,
-                                              fitness_for_crossover, total_offspring)
+        total_offspring = mutate(offspring_crossover, parent_1, parent_2, total_offspring)
+        # total_offspring = mutate_self_adapted(offspring_crossover, parent_1, parent_2, parent_1_fitness,
+        #                                       parent_2_fitness,
+        #                                       fitness_for_crossover, total_offspring)
 
     final_total_offspring = np.vstack(total_offspring)
     return final_total_offspring
@@ -150,8 +151,8 @@ def single_point_crossover(parent_1, parent_2, crossover_point):
     return parent_1_new, parent_2_new
 
 
-# todo: implement two ways of mutation for our research question - Rumy
 def mutate(offspring_uniform, parent_1, parent_2, total_offspring):
+
     offspring_uniform[0] = parent_1.copy()
     offspring_uniform[1] = parent_2.copy()
 
@@ -185,9 +186,9 @@ def mutate_self_adapted(offspring_uniform, parent_1, parent_2, parent_1_fitness,
     # else:
     #     mutation_rate -= 0.1
 
-    for i in range(0, len(offspring_uniform[0])):
+    for k in range(0, len(offspring_uniform[0])):
         if np.random.uniform(0, 1) <= mutation_rate:
-            offspring_uniform[0][i] = offspring_uniform[0][i] + np.random.normal(0, 1)
+            offspring_uniform[0][k] = offspring_uniform[0][k] + np.random.normal(0, 1)
 
     mutation_rate = (best_fitness - parent_2_fitness) / (best_fitness - avg_population_fitness) * 0.5
 
@@ -196,9 +197,9 @@ def mutate_self_adapted(offspring_uniform, parent_1, parent_2, parent_1_fitness,
     # else:
     #     mutation_rate -= 0.1
 
-    for i in range(0, len(offspring_uniform[1])):
+    for l in range(0, len(offspring_uniform[1])):
         if np.random.uniform(0, 1) <= mutation_rate:
-            offspring_uniform[1][i] = offspring_uniform[1][i] + np.random.normal(0, 1)
+            offspring_uniform[1][l] = offspring_uniform[1][l] + np.random.normal(0, 1)
 
     mutated_offspring_1 = offspring_uniform[0]
     mutated_offspring_2 = offspring_uniform[1]
@@ -212,9 +213,9 @@ def mutate_self_adapted(offspring_uniform, parent_1, parent_2, parent_1_fitness,
     return total_offspring
 
 
-# todo: fix the doomsday - Melis
 def replacement(population, population_fit):
-    parent_1, parent_2 = tournament_selection(population, population_fit)
+    parent_1, _ = tournament_selection(population, population_fit)
+    parent_2, _ = tournament_selection(population, population_fit)
 
     first_point = int(np.random.uniform(0, n_vars, 1)[0])
     second_point = int(np.random.uniform(0, n_vars, 1)[0])
@@ -239,7 +240,6 @@ def replacement(population, population_fit):
         new_fitness = np.hstack((new_offspring_fitness, cleaned_fitness))
         population = new_pop.copy()
         population_fit = new_fitness.copy()
-    print("REPLACEMENT !!!!!!!!!!!!!")
     return population, population_fit
 
 
@@ -375,11 +375,12 @@ else:
         fit_offspring = evaluate(offspring)
 
         """ Choose survival selection method """
+        if survival_method == "elitism":
+            whole_population, population_fitness = elitism_survival_selection(whole_population, population_fitness)
 
-        # todo: debug elitism
-        whole_population, population_fitness = elitism_survival_selection(whole_population, population_fitness)
-        # whole_population, population_fitness = probability_survival_selection(whole_population, population_fitness,
-        #                                                                      offspring)
+        elif survival_method == "probability":
+            whole_population, population_fitness = probability_survival_selection(whole_population, population_fitness,
+                                                                                 offspring)
 
         """ does replacement """
         whole_population, population_fitness = replacement(whole_population, population_fitness)
