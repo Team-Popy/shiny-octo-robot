@@ -3,7 +3,7 @@
 values.mean() - values.std()
 """
 
-# todo: later hybridization maybe?
+# todo: later hybridization
 
 import sys
 
@@ -37,6 +37,7 @@ generations = 10
 n_hidden_neurons = 10
 lower_limit = -1
 upper_limit = 1
+mutation_rate = 0.2
 
 headless = True
 if headless:
@@ -126,14 +127,17 @@ def two_points_crossover(population_data, fitness_for_crossover):
 
     for p in range(0, population_data.shape[0], 2):
         offspring_crossover = np.zeros((2, n_vars))
-        parent_1, parent_2 = tournament_selection(population_data, fitness_for_crossover)
+        parent_1, parent_2, parent_1_fitness, parent_2_fitness = tournament_selection(population_data,
+                                                                                      fitness_for_crossover)
 
         """ crossover """
         for m in crossover_point:
             parent_1, parent_2 = single_point_crossover(parent_1, parent_2, m)
 
         """ mutation """
-        total_offspring = mutate(offspring_crossover, parent_1, parent_2, total_offspring)
+        total_offspring = mutate_self_adapted(offspring_crossover, parent_1, parent_2, parent_1_fitness,
+                                              parent_2_fitness,
+                                              fitness_for_crossover, total_offspring)
 
     final_total_offspring = np.vstack(total_offspring)
     return final_total_offspring
@@ -162,6 +166,52 @@ def mutate(offspring_uniform, parent_1, parent_2, total_offspring):
     return total_offspring
 
 
+def mutate_self_adapted(offspring_uniform, parent_1, parent_2, parent_1_fitness, parent_2_fitness,
+                        fitness_for_crossover,
+                        total_offspring):
+    offspring_uniform[0] = parent_1.copy()
+    offspring_uniform[1] = parent_2.copy()
+
+    avg_population_fitness = np.average(fitness_for_crossover)
+
+    global mutation_rate
+
+    best_fitness = np.argmax(fitness_for_crossover)
+    mutation_rate = (best_fitness - parent_1_fitness) / (best_fitness - avg_population_fitness) * 0.5
+
+    # if parent_1_fitness < avg_population_fitness:
+    #     mutation_rate += 0.1
+    # else:
+    #     mutation_rate -= 0.1
+
+    for i in range(0, len(offspring_uniform[0])):
+        if np.random.uniform(0, 1) <= mutation_rate:
+            offspring_uniform[0][i] = offspring_uniform[0][i] + np.random.normal(0, 1)
+
+    mutation_rate = (best_fitness - parent_2_fitness) / (best_fitness - avg_population_fitness) * 0.5
+
+    # if parent_2_fitness < avg_population_fitness:
+    #     mutation_rate += 0.1
+    # else:
+    #     mutation_rate -= 0.1
+
+    for i in range(0, len(offspring_uniform[1])):
+        if np.random.uniform(0, 1) <= mutation_rate:
+            offspring_uniform[1][i] = offspring_uniform[1][i] + np.random.normal(0, 1)
+
+    mutated_offspring_1 = offspring_uniform[0]
+    mutated_offspring_2 = offspring_uniform[1]
+
+    mutated_offspring_1 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_1)))
+    mutated_offspring_2 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_2)))
+
+    total_offspring.append(mutated_offspring_1)
+    total_offspring.append(mutated_offspring_2)
+
+    return total_offspring
+
+
+# todo: fix the doomsday - Melis
 def replacement(population, population_fit):
     parent_1, parent_2 = tournament_selection(population, population_fit)
 
