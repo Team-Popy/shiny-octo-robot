@@ -23,7 +23,7 @@ from pathlib import Path
 run_mode = "train"
 
 """ set experiment name """
-experiment_name = "enemy_test_GENERALIST_merged"
+experiment_name = "enemy_7_8_elitism"
 
 """ set mutation settings """
 toolbox = base.Toolbox()
@@ -97,7 +97,8 @@ def get_best_parent_for_tournament(population_data, fitness_data):
 
     print(fitness_parents_dict)
     max_fitness_index = list(sorted(fitness_parents_dict, key=lambda k: (fitness_parents_dict[k], k)))[-1]
-    return population_data[max_fitness_index]
+    max_fitness = fitness_parents_dict[max_fitness_index]
+    return population_data[max_fitness_index], max_fitness
 
 
 def tournament_selection(population, fitness_for_tournament):
@@ -127,8 +128,8 @@ def two_points_crossover(population_data, fitness_for_crossover):
 
     for p in range(0, population_data.shape[0], 2):
         offspring_crossover = np.zeros((2, n_vars))
-        parent_1, parent_2, parent_1_fitness, parent_2_fitness = tournament_selection(population_data,
-                                                                                      fitness_for_crossover)
+        parent_1, parent_1_fitness = tournament_selection(population_data, fitness_for_crossover)
+        parent_2, parent_2_fitness = tournament_selection(population_data, fitness_for_crossover)
 
         """ crossover """
         for m in crossover_point:
