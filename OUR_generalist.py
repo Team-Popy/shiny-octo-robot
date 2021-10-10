@@ -96,7 +96,6 @@ def get_best_parent_for_tournament(population_data, fitness_data):
                             random_val_3: fitness_data[random_val_3], random_val_4: fitness_data[random_val_4]}
 
     print(fitness_parents_dict)
-    print(list(sorted(fitness_parents_dict, key=lambda k: (fitness_parents_dict[k], k))))
     max_fitness_index = list(sorted(fitness_parents_dict, key=lambda k: (fitness_parents_dict[k], k)))[-1]
     return population_data[max_fitness_index]
 
@@ -214,7 +213,6 @@ def mutate_self_adapted(offspring_uniform, parent_1, parent_2, parent_1_fitness,
 
 # todo: fix the doomsday - Melis
 def replacement(population, population_fit):
-    print("REPLACEMENT !!!!!!!!!!!!!")
     parent_1, parent_2 = tournament_selection(population, population_fit)
 
     first_point = int(np.random.uniform(0, n_vars, 1)[0])
@@ -240,8 +238,7 @@ def replacement(population, population_fit):
         new_fitness = np.hstack((new_offspring_fitness, cleaned_fitness))
         population = new_pop.copy()
         population_fit = new_fitness.copy()
-        print("END")
-
+    print("REPLACEMENT !!!!!!!!!!!!!")
     return population, population_fit
 
 
@@ -264,8 +261,9 @@ def elitism_survival_selection(population_data, fitness_data):
     offspring_survivals = offspring[offspring_indices]
 
     final_population = np.vstack((elite_individuals, offspring_survivals))
-
-    return final_fitness, final_population
+    print(" ELITISM !!!!!!")
+    print(final_fitness)
+    return final_population, final_fitness
 
 
 def probability_survival_selection(population_data, fitness_data, offspring_data):
@@ -378,9 +376,9 @@ else:
         """ Choose survival selection method """
 
         # todo: debug elitism
-        # whole_population, population_fitness = elitism_survival_selection(whole_population, population_fitness)
-        whole_population, population_fitness = probability_survival_selection(whole_population, population_fitness,
-                                                                              offspring)
+        whole_population, population_fitness = elitism_survival_selection(whole_population, population_fitness)
+        # whole_population, population_fitness = probability_survival_selection(whole_population, population_fitness,
+        #                                                                      offspring)
 
         """ does replacement """
         whole_population, population_fitness = replacement(whole_population, population_fitness)
