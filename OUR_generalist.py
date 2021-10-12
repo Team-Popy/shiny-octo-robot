@@ -27,7 +27,7 @@ survival_method = "probability"
 
 """ set experiment name """
 
-experiment_name = "enemy_7_8_" + survival_method + "climbing_hill_test3"
+experiment_name = "enemy_2_6_" + survival_method + "_climbing_hill_test1"
 
 """ set mutation settings """
 toolbox = base.Toolbox()
