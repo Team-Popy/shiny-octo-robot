@@ -24,7 +24,7 @@ from pathlib import Path
 run_mode = "train"
 
 """ set survival method """
-survival_method = "elitism"
+survival_method = "probability"
 
 """ set experiment name """
 experiment_name = "enemy_7_8_" + survival_method + "_normal_mutation_100_pop"
@@ -187,7 +187,7 @@ def mutate_self_adapted(offspring_uniform, parent_1, parent_2, parent_1_fitness,
 
     for k in range(0, len(offspring_uniform[0])):
         if random.random() <= mutation_rate:
-            offspring_uniform[0][k] = offspring_uniform[0][k] + np.random.uniform(0, 1)
+            offspring_uniform[0][k] = offspring_uniform[0][k] + np.random.uniform(0, 0.1)
 
     if parent_2_fitness < avg_population_fitness:
         mutation_rate += 0.1
@@ -196,7 +196,7 @@ def mutate_self_adapted(offspring_uniform, parent_1, parent_2, parent_1_fitness,
 
     for k in range(0, len(offspring_uniform[0])):
         if random.random() <= mutation_rate:
-            offspring_uniform[0][k] = offspring_uniform[0][k] + np.random.uniform(0, 1)
+            offspring_uniform[0][k] = offspring_uniform[0][k] + np.random.uniform(0, 0.1)
 
     mutated_offspring_1 = offspring_uniform[0]
     mutated_offspring_2 = offspring_uniform[1]
