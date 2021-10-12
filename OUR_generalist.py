@@ -17,7 +17,6 @@ import os
 from deap import base
 import random
 from deap import tools
-import operator
 from pathlib import Path
 
 """ set a train or a test mode """
@@ -27,7 +26,7 @@ run_mode = "train"
 survival_method = "elitism"
 
 """ set experiment name """
-experiment_name = "enemy_7_8_" + survival_method + "_elitism_attemp_pop"
+experiment_name = "enemy_7_8_" + survival_method + "_mutation_value_100_pop"
 
 """ set mutation settings """
 toolbox = base.Toolbox()
@@ -41,7 +40,6 @@ generations = 10
 n_hidden_neurons = 10
 lower_limit = -1
 upper_limit = 1
-mutation_rate = 0.2
 
 headless = True
 if headless:
@@ -128,6 +126,8 @@ def two_points_crossover(population_data, fitness_for_crossover):
     second_point = int(np.random.uniform(0, n_vars, 1)[0])
     crossover_point = [first_point, second_point]
     total_offspring = []
+    mutation_rate = 0.1
+    mutation_value = 0.1
 
     for p in range(0, population_data.shape[0], 2):
         offspring_crossover = np.zeros((2, n_vars))
@@ -139,10 +139,18 @@ def two_points_crossover(population_data, fitness_for_crossover):
             parent_1, parent_2 = single_point_crossover(parent_1, parent_2, m)
 
         """ mutation """
-        total_offspring = mutate(offspring_crossover, parent_1, parent_2, total_offspring)
-        # total_offspring = mutate_self_adapted(offspring_crossover, parent_1, parent_2, parent_1_fitness,
-        #                                       parent_2_fitness,
-        #                                       fitness_for_crossover, total_offspring)
+        # total_offspring = mutate(offspring_crossover, parent_1, parent_2, total_offspring)
+        # total_offspring, mutation_rate = mutate_self_adapted_rate(offspring_crossover, parent_1, parent_2,
+        #                                                           parent_1_fitness,
+        #                                                           parent_2_fitness,
+        #                                                           fitness_for_crossover, total_offspring,
+        #                                                           mutation_rate)
+
+        total_offspring, mutation_value = mutate_self_adapted_value(offspring_crossover, parent_1, parent_2,
+                                                                    parent_1_fitness,
+                                                                    parent_2_fitness,
+                                                                    fitness_for_crossover, total_offspring,
+                                                                    mutation_rate, mutation_value)
 
     final_total_offspring = np.vstack(total_offspring)
     return final_total_offspring
@@ -170,36 +178,19 @@ def mutate(offspring_uniform, parent_1, parent_2, total_offspring):
     return total_offspring
 
 
-def mutate_self_adapted(offspring_uniform, parent_1, parent_2, parent_1_fitness, parent_2_fitness,
-                        fitness_for_crossover,
-                        total_offspring):
+def mutate_self_adapted_rate(offspring_uniform, parent_1, parent_2, parent_1_fitness, parent_2_fitness,
+                             fitness_for_crossover,
+                             total_offspring, mutation_rate):
     offspring_uniform[0] = parent_1.copy()
     offspring_uniform[1] = parent_2.copy()
 
     avg_population_fitness = np.average(fitness_for_crossover)
 
-    global mutation_rate
-
-    if parent_1_fitness < avg_population_fitness:
-        mutation_rate += 0.1
-    else:
-        mutation_rate -= 0.1
-
-    for k in range(0, len(offspring_uniform[0])):
-        if random.random() <= mutation_rate:
-            offspring_uniform[0][k] = offspring_uniform[0][k] + np.random.uniform(0, 0.1)
-
-    if parent_2_fitness < avg_population_fitness:
-        mutation_rate += 0.1
-    else:
-        mutation_rate -= 0.1
-
-    for k in range(0, len(offspring_uniform[0])):
-        if random.random() <= mutation_rate:
-            offspring_uniform[0][k] = offspring_uniform[0][k] + np.random.uniform(0, 0.1)
-
-    mutated_offspring_1 = offspring_uniform[0]
-    mutated_offspring_2 = offspring_uniform[1]
+    print("***************************", mutation_rate)
+    mutated_offspring_1 = check_and_mutate_rate(avg_population_fitness, mutation_rate, offspring_uniform[0],
+                                                parent_1_fitness)
+    mutated_offspring_2 = check_and_mutate_rate(avg_population_fitness, mutation_rate, offspring_uniform[1],
+                                                parent_2_fitness)
 
     mutated_offspring_1 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_1)))
     mutated_offspring_2 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_2)))
@@ -207,7 +198,58 @@ def mutate_self_adapted(offspring_uniform, parent_1, parent_2, parent_1_fitness,
     total_offspring.append(mutated_offspring_1)
     total_offspring.append(mutated_offspring_2)
 
-    return total_offspring
+    return total_offspring, mutation_rate
+
+
+def check_and_mutate_rate(avg_population_fitness, mutation_rate, parent_offspring, parent_fitness):
+    if parent_fitness < avg_population_fitness:
+        mutation_rate += 0.0001
+    elif mutation_rate > 0.0001:
+        mutation_rate -= 0.0001
+    else:
+        mutation_rate = 0.0001
+
+    for k in range(0, len(parent_offspring)):
+        if random.random() <= mutation_rate:
+            parent_offspring[k] = parent_offspring[k] + np.random.normal(0, 0.2)
+
+    return parent_offspring
+
+
+def mutate_self_adapted_value(offspring_uniform, parent_1, parent_2, parent_1_fitness, parent_2_fitness,
+                              fitness_for_crossover,
+                              total_offspring, mutation_rate, mutation_value):
+    offspring_uniform[0] = parent_1.copy()
+    offspring_uniform[1] = parent_2.copy()
+
+    avg_population_fitness = np.average(fitness_for_crossover)
+
+    print("---------------", mutation_value)
+    mutated_offspring_1 = check_and_mutate_value(avg_population_fitness, mutation_rate, mutation_value,
+                                                 offspring_uniform[0],
+                                                 parent_1_fitness)
+    mutated_offspring_2 = check_and_mutate_value(avg_population_fitness, mutation_rate, mutation_value,
+                                                 offspring_uniform[1],
+                                                 parent_2_fitness)
+
+    mutated_offspring_1 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_1)))
+    mutated_offspring_2 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_2)))
+
+    total_offspring.append(mutated_offspring_1)
+    total_offspring.append(mutated_offspring_2)
+
+    return total_offspring, mutation_value
+
+
+def check_and_mutate_value(avg_population_fitness, mutation_rate, mutation_value, parent_offspring, parent_fitness):
+    if parent_fitness < avg_population_fitness:
+        mutation_value += 0.001
+    else:
+        mutation_value -= 0.001
+    for k in range(0, len(parent_offspring)):
+        if random.random() <= mutation_rate:
+            parent_offspring[k] = parent_offspring[k] + mutation_value
+    return parent_offspring
 
 
 def replacement(population, population_fit):
@@ -225,7 +267,7 @@ def replacement(population, population_fit):
 
     total_offspring = mutate(offspring_crossover, parent_1, parent_2, empty_offspring)
     final_offspring = total_offspring[0]
-    #hill climber - justifing the choice of 5 individuals or decrease population size; light form of hybridization
+    # hill climber - justifing the choice of 5 individuals or decrease population size; light form of hybridization
     # todo: implement second crossover to do primitive hybridization - local search
 
     new_offspring_fitness = evaluate([final_offspring])[0]
