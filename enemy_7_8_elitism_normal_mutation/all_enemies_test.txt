@@ -46,3 +46,4 @@ enemy: 8, fitness: 86.16, player: 21.40000000000024, enemy: 0.0, time: 396.0
 enemy: 8, fitness: 86.16, player: 21.40000000000024, enemy: 0.0, time: 396.0
 enemy: 8, fitness: 86.16, player: 21.40000000000024, enemy: 0.0, time: 396.0
 enemy: 8, fitness: 86.16, player: 21.40000000000024, enemy: 0.0, time: 396.0
+enemy: 8, fitness: 89.37, player: 49.000000000000306, enemy: 0.0, time: 253.0
