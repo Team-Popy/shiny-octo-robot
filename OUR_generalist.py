@@ -7,7 +7,6 @@ values.mean() - values.std()
 #todo: check results when starting with init pop from previous task
 
 import sys
-
 sys.path.insert(0, 'evoman')
 from environment import Environment
 from demo_controller import player_controller
@@ -24,18 +23,18 @@ from pathlib import Path
 run_mode = "train"
 
 """ set survival method """
-survival_method = "elitism"
+survival_method = "probability"
 
 """ set experiment name """
-experiment_name = "enemy_7_8_" + survival_method + "_normal_mutation"
+experiment_name = "enemy_7_8_" + survival_method + "_normal_mutation_20"
 
 """ set mutation settings """
 toolbox = base.Toolbox()
 toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=0.1, indpb=0.2)
 
 """ set experiment parameters """
-population_length = 50
-generations = 10
+population_length = 100
+generations = 20
 
 """ constant parameters """
 n_hidden_neurons = 10
