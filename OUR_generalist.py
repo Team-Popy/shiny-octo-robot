@@ -23,7 +23,7 @@ from pathlib import Path
 run_mode = "train"
 
 """ set survival method """
-survival_method = "probability"
+survival_method = "elitism"
 
 """ set experiment name """
 
@@ -305,7 +305,25 @@ def elitism_survival_selection(population_data, fitness_data):
     offspring_survivals = offspring[offspring_indices]
 
     final_population = np.vstack((elite_individuals, offspring_survivals))
+<<<<<<< HEAD
+=======
+    print(final_fitness)
+    print(" ELITISM !!!!!!")
+
+>>>>>>> 9b47e68efbb5b809f50ca83df8d5053f08263cf5
     return final_population, final_fitness
+
+
+def elitism_attemp(population_data,fitness_data):
+    elitism_ratio = 0.05
+
+    new_population = int(elitism_ratio * population_data.shape[0])
+
+    elitist_indices = np.argpartition(fitness_data, -new_population)[-new_population:]
+    elitist_members = population_data[elitist_indices]
+    elitist_members_fitness = fitness_data[elitist_indices]
+
+    return elitist_members,elitist_members_fitness
 
 
 def probability_survival_selection(population_data, fitness_data, offspring_data):
@@ -409,8 +427,14 @@ else:
         print(ini_g)
         print(f"!!!!!!!!!!!! generation number {i}")
 
+<<<<<<< HEAD
         # 5 best individuals and save them
         # members, fitness = elitism_attempt
+=======
+        # 5 elite individuals (elitism)
+        elite_members, elite_members_fitness = elitism_attemp(whole_population,population_fitness)
+
+>>>>>>> 9b47e68efbb5b809f50ca83df8d5053f08263cf5
 
         """ choosing crossover_method """
         offspring = two_points_crossover(whole_population, population_fitness)
@@ -430,8 +454,19 @@ else:
             whole_population, population_fitness = probability_survival_selection(whole_population, population_fitness,
                                                                                   offspring)
 
+<<<<<<< HEAD
         # vstack 5 elites
         # best 100 individuals from 105
+=======
+        # ******************************************************************************** MELIS CHECK THIS PART
+        # vtsack and hstack  5 elites
+        total_population_with_elites = np.vstack((whole_population, elite_members))
+        total_fitness_with_elites = np.hstack((population_fitness, elite_members_fitness))
+        # best 100 individuals based on fitness from 105
+        best_100_indexes = np.argpartition(total_fitness_with_elites, -100)[-100:]
+        whole_population_with_elite = total_population_with_elites[best_100_indexes]
+        elite_fitness = total_fitness_with_elites[best_100_indexes]
+>>>>>>> 9b47e68efbb5b809f50ca83df8d5053f08263cf5
 
         """ statistics about the last fitness """
         best = np.argmax(population_fitness)

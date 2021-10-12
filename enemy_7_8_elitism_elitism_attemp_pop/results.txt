@@ -1,0 +1,25 @@
+
+
+gen best mean std
+0 65.974134 -1.545751 10.773236
+
+gen best mean std
+0 66.036421 -0.66324 13.834778
+
+gen best mean std
+0 66.29289 -1.756126 11.175792
+
+gen best mean std
+0 66.266659 0.088265 15.190246
+
+gen best mean std
+0 65.947911 -0.331501 11.436097
+
+gen best mean std
+0 66.579465 -0.210049 14.46358
+
+gen best mean std
+0 66.237949 -0.781894 13.264034
+
+gen best mean std
+0 65.978977 -0.073812 12.893116
