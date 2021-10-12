@@ -4,7 +4,7 @@ values.mean() - values.std()
 """
 
 # todo: later hybridization
-#todo: check results when starting with init pop from previous task
+# todo: check results when starting with init pop from previous task
 
 import sys
 
@@ -27,14 +27,14 @@ run_mode = "train"
 survival_method = "elitism"
 
 """ set experiment name """
-experiment_name = "enemy_7_8_" + survival_method + "_normal_mutation"
+experiment_name = "enemy_7_8_" + survival_method + "_normal_mutation_100_pop"
 
 """ set mutation settings """
 toolbox = base.Toolbox()
 toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=0.1, indpb=0.2)
 
 """ set experiment parameters """
-population_length = 50
+population_length = 100
 generations = 10
 
 """ constant parameters """
@@ -49,6 +49,8 @@ if headless:
 
 if not os.path.exists(experiment_name):
     os.makedirs(experiment_name)
+
+# todo: next [2,6]
 
 # initializes simulation in individual evolution mode, for single static enemy.
 env = Environment(experiment_name=experiment_name,
@@ -153,7 +155,6 @@ def single_point_crossover(parent_1, parent_2, crossover_point):
 
 
 def mutate(offspring_uniform, parent_1, parent_2, total_offspring):
-
     offspring_uniform[0] = parent_1.copy()
     offspring_uniform[1] = parent_2.copy()
 
@@ -229,8 +230,8 @@ def replacement(population, population_fit):
 
     total_offspring = mutate(offspring_crossover, parent_1, parent_2, empty_offspring)
     final_offspring = total_offspring[0]
-
-    #todo: implement second crossover to do primitive hybridization - local search
+    #hill climber - justifing the choice of 5 individuals or decrease population size; light form of hybridization
+    # todo: implement second crossover to do primitive hybridization - local search
 
     new_offspring_fitness = evaluate([final_offspring])[0]
     random_index = random.sample(range(0, population.shape[0]), 1)
@@ -246,7 +247,7 @@ def replacement(population, population_fit):
     return population, population_fit
 
 
-#todo: improve it (Melis) or try different method (Alicja)
+# todo: improve it (Melis) or try different method (Alicja)
 def elitism_survival_selection(population_data, fitness_data):
     elite_threshold = 0.10
 
@@ -387,8 +388,7 @@ else:
 
         elif survival_method == "probability":
             whole_population, population_fitness = probability_survival_selection(whole_population, population_fitness,
-                                                                                 offspring)
-
+                                                                                  offspring)
 
         """ statistics about the last fitness """
         best = np.argmax(population_fitness)
