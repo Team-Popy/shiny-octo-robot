@@ -24,7 +24,7 @@ from pathlib import Path
 run_mode = "train"
 
 """ set survival method """
-survival_method = "elitism"
+survival_method = "probability"
 
 """ set experiment name """
 experiment_name = "enemy_7_8_" + survival_method + "_normal_mutation_100_pop"
@@ -180,28 +180,23 @@ def mutate_self_adapted(offspring_uniform, parent_1, parent_2, parent_1_fitness,
 
     global mutation_rate
 
-    best_fitness = np.argmax(fitness_for_crossover)
-    mutation_rate = (best_fitness - parent_1_fitness) / (best_fitness - avg_population_fitness) * 0.5
-
-    # if parent_1_fitness < avg_population_fitness:
-    #     mutation_rate += 0.1
-    # else:
-    #     mutation_rate -= 0.1
+    if parent_1_fitness < avg_population_fitness:
+        mutation_rate += 0.1
+    else:
+        mutation_rate -= 0.1
 
     for k in range(0, len(offspring_uniform[0])):
-        if np.random.uniform(0, 1) <= mutation_rate:
-            offspring_uniform[0][k] = offspring_uniform[0][k] + np.random.normal(0, 1)
+        if random.random() <= mutation_rate:
+            offspring_uniform[0][k] = offspring_uniform[0][k] + np.random.uniform(0, 0.1)
 
-    mutation_rate = (best_fitness - parent_2_fitness) / (best_fitness - avg_population_fitness) * 0.5
+    if parent_2_fitness < avg_population_fitness:
+        mutation_rate += 0.1
+    else:
+        mutation_rate -= 0.1
 
-    # if parent_2_fitness < avg_population_fitness:
-    #     mutation_rate += 0.1
-    # else:
-    #     mutation_rate -= 0.1
-
-    for l in range(0, len(offspring_uniform[1])):
-        if np.random.uniform(0, 1) <= mutation_rate:
-            offspring_uniform[1][l] = offspring_uniform[1][l] + np.random.normal(0, 1)
+    for k in range(0, len(offspring_uniform[0])):
+        if random.random() <= mutation_rate:
+            offspring_uniform[0][k] = offspring_uniform[0][k] + np.random.uniform(0, 0.1)
 
     mutated_offspring_1 = offspring_uniform[0]
     mutated_offspring_2 = offspring_uniform[1]
