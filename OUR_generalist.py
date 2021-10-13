@@ -26,14 +26,15 @@ run_mode = "train"
 survival_method = "probability"
 
 """ set experiment name """
-experiment_name = "enemy_7_8_" + survival_method + "_elitism_tests_0.3"
+experiment_name = "enemy_2_6_" + survival_method + "_climbing_hill_test1"
+
 
 """ set mutation settings """
 toolbox = base.Toolbox()
 toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=0.1, indpb=0.2)
 
 """ set experiment parameters """
-population_length = 100
+population_length = 50
 generations = 10
 
 """ constant parameters """
@@ -147,10 +148,10 @@ def two_points_crossover(population_data, fitness_for_crossover):
         #                                                           mutation_rate)
 
         # total_offspring, mutation_value = mutate_self_adapted_value(offspring_crossover, parent_1, parent_2,
-        #                                                            parent_1_fitness,
-        #                                                            parent_2_fitness,
-        #                                                            fitness_for_crossover, total_offspring,
-        #                                                            mutation_rate, mutation_value)
+        #                                                             parent_1_fitness,
+        #                                                             parent_2_fitness,
+        #                                                             fitness_for_crossover, total_offspring,
+        #                                                             mutation_rate, mutation_value)
 
     final_total_offspring = np.vstack(total_offspring)
     return final_total_offspring
@@ -252,36 +253,36 @@ def check_and_mutate_value(avg_population_fitness, mutation_rate, mutation_value
     return parent_offspring
 
 
-def replacement(population, population_fit):
-    parent_1, _ = tournament_selection(population, population_fit)
-    parent_2, _ = tournament_selection(population, population_fit)
+def simplest_hybridization_climbing_hill(population, population_fit):
+    best_fitness_indexes = np.argpartition(population_fit, -4)[-4:]
 
-    first_point = int(np.random.uniform(0, n_vars, 1)[0])
-    second_point = int(np.random.uniform(0, n_vars, 1)[0])
-    crossover_point = [first_point, second_point]
-    empty_offspring = []
+    for best_index in best_fitness_indexes:
+        first_fitness = population_fit[best_index]
+        first_individual = population[best_index]
 
-    offspring_crossover = np.zeros((2, n_vars))
-    for m in crossover_point:
-        parent_1, parent_2 = single_point_crossover(parent_1, parent_2, m)
+        new_fitness = first_fitness.copy()
+        new_individual = first_individual.copy()
+        climb_mutation_rate = 0.2
+        amount_of_climbing = 0
+        while new_fitness <= first_fitness:
+            for p in range(len(first_individual)):
+                if random.random() <= climb_mutation_rate:
+                    new_individual[p] = first_individual[p] + np.random.normal(0, 0.25)
 
-    total_offspring = mutate(offspring_crossover, parent_1, parent_2, empty_offspring)
-    final_offspring = total_offspring[0]
-    # hill climber - justifing the choice of 5 individuals or decrease population size; light form of hybridization
-    # todo: implement second crossover to do primitive hybridization - local search
+            new_fitness = evaluate([new_individual])
+            amount_of_climbing += 1
+            if amount_of_climbing > 30:
+                break
+            print("CLIMBING !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", amount_of_climbing, first_fitness, new_fitness)
 
-    new_offspring_fitness = evaluate([final_offspring])[0]
-    random_index = random.sample(range(0, population.shape[0]), 1)
-    random_fitness = population_fit[random_index][0]
+        if new_fitness > first_fitness:
+            cleaned_pop = np.delete(population, best_index, 0)
+            cleaned_fitness = np.delete(population_fit, best_index, 0)
+            population = np.vstack((new_individual, cleaned_pop))
+            population_fit = np.hstack((new_fitness, cleaned_fitness))
 
-    if random_fitness < new_offspring_fitness:
-        cleaned_pop = np.delete(population, random_index, 0)
-        cleaned_fitness = np.delete(population_fit, random_index, 0)
-        new_pop = np.vstack((final_offspring, cleaned_pop))
-        new_fitness = np.hstack((new_offspring_fitness, cleaned_fitness))
-        population = new_pop.copy()
-        population_fit = new_fitness.copy()
     return population, population_fit
+
 
 def elitism_attemp(population_data,fitness_data):
     elitism_ratio = np.random.uniform(0.01, 0.2, 1)[0]
@@ -398,7 +399,6 @@ else:
         # 5 elite individuals (elitism)
         elite_members, elite_members_fitness = elitism_attemp(whole_population,population_fitness)
 
-
         """ choosing crossover_method """
         offspring = two_points_crossover(whole_population, population_fitness)
 
@@ -406,12 +406,13 @@ else:
         fit_offspring = evaluate(offspring)
 
         """ does replacement """
-        whole_population, population_fitness = replacement(whole_population, population_fitness)
+        whole_population, population_fitness = simplest_hybridization_climbing_hill(whole_population,
+                                                                                    population_fitness)
 
         whole_population, population_fitness = probability_survival_selection(whole_population, population_fitness,
                                                                                   offspring)
 
-        # elitism
+
         total_population_with_elites = np.vstack((whole_population, elite_members))
         total_fitness_with_elites = np.hstack((population_fitness, elite_members_fitness))
 

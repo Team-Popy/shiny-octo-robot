@@ -8,7 +8,8 @@ import os
 from pathlib import Path
 
 
-path_to_best_solution = "enemy_7_8_probability_elitism_tests_0.3"
+path_to_best_solution = "enemy_7_8_probabilityclimbing_hill_test3"
+
 
 n_hidden_neurons = 10
 
