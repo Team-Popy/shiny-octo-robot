@@ -408,12 +408,7 @@ else:
         """ does replacement """
         whole_population, population_fitness = replacement(whole_population, population_fitness)
 
-        """ Choose survival selection method """
-        # if survival_method == "elitism":
-        #    whole_population, population_fitness = elitism_survival_selection(whole_population, population_fitness)
-
-        if survival_method == "probability":
-            whole_population, population_fitness = probability_survival_selection(whole_population, population_fitness,
+        whole_population, population_fitness = probability_survival_selection(whole_population, population_fitness,
                                                                                   offspring)
 
         # elitism
