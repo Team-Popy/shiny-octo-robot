@@ -255,7 +255,6 @@ def check_and_mutate_value(avg_population_fitness, mutation_rate, mutation_value
 
 
 def simplest_hybridization_climbing_hill(population, population_fit):
-    # todo: take best 4 individuals
     best_fitness_indexes = np.argpartition(population_fit, -4)[-4:]
 
     for best_index in best_fitness_indexes:
