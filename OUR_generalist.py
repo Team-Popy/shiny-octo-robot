@@ -23,10 +23,10 @@ from pathlib import Path
 run_mode = "train"
 
 """ set survival method """
-survival_method = "elitism"
+survival_method = "probability"
 
 """ set experiment name """
-experiment_name = "enemy_7_8_" + survival_method + "_mutation_value_100_pop"
+experiment_name = "enemy_7_8_" + survival_method + "_elitism_tests_0.3"
 
 """ set mutation settings """
 toolbox = base.Toolbox()
@@ -139,18 +139,18 @@ def two_points_crossover(population_data, fitness_for_crossover):
             parent_1, parent_2 = single_point_crossover(parent_1, parent_2, m)
 
         """ mutation """
-        # total_offspring = mutate(offspring_crossover, parent_1, parent_2, total_offspring)
+        total_offspring = mutate(offspring_crossover, parent_1, parent_2, total_offspring)
         # total_offspring, mutation_rate = mutate_self_adapted_rate(offspring_crossover, parent_1, parent_2,
         #                                                           parent_1_fitness,
         #                                                           parent_2_fitness,
         #                                                           fitness_for_crossover, total_offspring,
         #                                                           mutation_rate)
 
-        total_offspring, mutation_value = mutate_self_adapted_value(offspring_crossover, parent_1, parent_2,
-                                                                    parent_1_fitness,
-                                                                    parent_2_fitness,
-                                                                    fitness_for_crossover, total_offspring,
-                                                                    mutation_rate, mutation_value)
+        # total_offspring, mutation_value = mutate_self_adapted_value(offspring_crossover, parent_1, parent_2,
+        #                                                            parent_1_fitness,
+        #                                                            parent_2_fitness,
+        #                                                            fitness_for_crossover, total_offspring,
+        #                                                            mutation_rate, mutation_value)
 
     final_total_offspring = np.vstack(total_offspring)
     return final_total_offspring
@@ -283,36 +283,8 @@ def replacement(population, population_fit):
         population_fit = new_fitness.copy()
     return population, population_fit
 
-
-# todo: improve it (Melis) or try different method (Alicja)
-def elitism_survival_selection(population_data, fitness_data):
-    elite_threshold = 0.10
-
-    # fitnesses
-    elite_amount = int(population_length * elite_threshold)
-    elite_indices = np.argpartition(fitness_data, -elite_amount)[-elite_amount:]
-    elite_fitness = fitness_data[elite_indices]
-
-    offspring_amount = int(population_length * (1 - elite_threshold))
-    offspring_indices = np.argpartition(fit_offspring, -offspring_amount)[-offspring_amount:]
-    offspring_survivals_fitness = fit_offspring[offspring_indices]
-
-    final_fitness = np.append(elite_fitness, offspring_survivals_fitness)
-
-    # solutions
-    elite_individuals = population_data[elite_indices]
-    offspring_survivals = offspring[offspring_indices]
-
-    final_population = np.vstack((elite_individuals, offspring_survivals))
-    print(final_fitness)
-    print(" ELITISM !!!!!!")
-
-    return final_population, final_fitness
-
-
 def elitism_attemp(population_data,fitness_data):
-    elitism_ratio = 0.05
-
+    elitism_ratio = np.random.uniform(0.01, 0.2, 1)[0]
     new_population = int(elitism_ratio * population_data.shape[0])
 
     elitist_indices = np.argpartition(fitness_data, -new_population)[-new_population:]
@@ -437,19 +409,19 @@ else:
         whole_population, population_fitness = replacement(whole_population, population_fitness)
 
         """ Choose survival selection method """
-        if survival_method == "elitism":
-            whole_population, population_fitness = elitism_survival_selection(whole_population, population_fitness)
+        # if survival_method == "elitism":
+        #    whole_population, population_fitness = elitism_survival_selection(whole_population, population_fitness)
 
-        elif survival_method == "probability":
+        if survival_method == "probability":
             whole_population, population_fitness = probability_survival_selection(whole_population, population_fitness,
                                                                                   offspring)
 
-        # ******************************************************************************** MELIS CHECK THIS PART
-        # vtsack and hstack  5 elites
+        # elitism
         total_population_with_elites = np.vstack((whole_population, elite_members))
         total_fitness_with_elites = np.hstack((population_fitness, elite_members_fitness))
-        # best 100 individuals based on fitness from 105
-        best_100_indexes = np.argpartition(total_fitness_with_elites, -100)[-100:]
+
+        # best 100 individuals from 105 based on their fitness
+        best_100_indexes = np.argpartition(total_fitness_with_elites, -population_length)[-population_length:]
         whole_population_with_elite = total_population_with_elites[best_100_indexes]
         elite_fitness = total_fitness_with_elites[best_100_indexes]
 
