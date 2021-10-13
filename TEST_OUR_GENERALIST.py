@@ -10,6 +10,7 @@ from pathlib import Path
 
 path_to_best_solution = "enemy_7_8_probabilityclimbing_hill_test3"
 
+
 n_hidden_neurons = 10
 
 headless = True
