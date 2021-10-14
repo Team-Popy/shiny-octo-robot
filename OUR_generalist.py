@@ -3,7 +3,6 @@
 values.mean() - values.std()
 """
 
-# todo: later hybridization
 # todo: check results when starting with init pop from previous task
 
 import sys
@@ -22,18 +21,19 @@ from pathlib import Path
 """ set a train or a test mode """
 run_mode = "train"
 
-""" set survival method """
-survival_method = "probability"
+""" set survival and mutation method """
+survival_method = "probability"  # probability or elitism
+mutation_method = "adaptive"  # deap or adaptive
 
 """ set experiment name """
-experiment_name = "enemy_7_8_" + survival_method + "_no_mutation"
+experiment_name = "enemy_7_8_" + survival_method + "_" + mutation_method + "_mutation_0.0001"
 
 """ set mutation settings """
 toolbox = base.Toolbox()
 toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=0.1, indpb=0.2)
 
 """ set experiment parameters """
-population_length = 50
+population_length = 100
 generations = 10
 
 """ constant parameters """
@@ -140,17 +140,14 @@ def two_points_crossover(population_data, fitness_for_crossover, generation):
             parent_1, parent_2 = single_point_crossover(parent_1, parent_2, m)
 
         """ mutation """
-
-        # total_offspring = mutate(offspring_crossover, parent_1, parent_2, total_offspring)
-        # total_offspring, mutation_rate = mutate_adapted_rate_evaluate(offspring_crossover, parent_1, parent_2,
-        #                                                               fitness_for_crossover,
-        #                                                               total_offspring, mutation_rate, generation)
-        #
-        # total_offspring, mutation_value = mutate_adapted_value(offspring_crossover, parent_1, parent_2,
-        #                                                        total_offspring,
-        #                                                        mutation_value)
-        total_offspring = [parent_1, parent_2]
-
+        if mutation_method == "deap":
+            total_offspring = mutate(offspring_crossover, parent_1, parent_2, total_offspring)
+        elif mutation_method == "adaptive":
+            total_offspring, mutation_rate = mutate_adapted_rate_evaluate(offspring_crossover, parent_1, parent_2,
+                                                                          fitness_for_crossover, total_offspring,
+                                                                          mutation_rate, generation)
+        else:
+            total_offspring = [parent_1, parent_2]
 
     final_total_offspring = np.vstack(total_offspring)
     return final_total_offspring
@@ -178,56 +175,6 @@ def mutate(offspring_uniform, parent_1, parent_2, total_offspring):
     return total_offspring
 
 
-def mutate_adapted_rate(new_offspring, parent_1, parent_2, total_offspring, mutation_rate):
-    new_offspring[0] = parent_1.copy()
-    new_offspring[1] = parent_2.copy()
-
-    print("***************************", mutation_rate)
-
-    for k in range(0, len(new_offspring[0])):
-        if random.random() <= mutation_rate:
-            new_offspring[0][k] = new_offspring[0][k] + np.random.normal(0, 0.2)
-
-    mutated_offspring_1 = new_offspring[0]
-    mutated_offspring_1 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_1)))
-
-    for k in range(0, len(new_offspring[1])):
-        if random.random() <= mutation_rate:
-            new_offspring[1][k] = new_offspring[1][k] + np.random.normal(0, 0.2)
-
-    mutated_offspring_2 = new_offspring[1]
-    mutated_offspring_2 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_2)))
-
-    total_offspring.append(mutated_offspring_1)
-    total_offspring.append(mutated_offspring_2)
-
-    mutation_rate -= 0.03
-    return total_offspring, mutation_rate
-
-
-def mutate_adapted_value(new_offspring, parent_1, parent_2, total_offspring, mutation_value):
-    new_offspring[0] = parent_1.copy()
-    new_offspring[1] = parent_2.copy()
-
-    print("***************************", mutation_value)
-
-    for m in range(0, len(new_offspring)):
-        for k in range(0, len(new_offspring[0])):
-            if random.random() <= mutation_threshold:
-                new_offspring[m][k] = new_offspring[m][k] + mutation_value
-
-    mutated_offspring_1 = new_offspring[0]
-    mutated_offspring_1 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_1)))
-    mutated_offspring_2 = new_offspring[1]
-    mutated_offspring_2 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_2)))
-
-    total_offspring.append(mutated_offspring_1)
-    total_offspring.append(mutated_offspring_2)
-
-    mutation_value -= 0.03
-    return total_offspring, mutation_value
-
-
 def mutate_adapted_rate_evaluate(offspring_uniform, parent_1, parent_2, fitness_for_crossover,
                                  total_offspring, mutation_rate, generation):
     offspring_uniform[0] = parent_1.copy()
@@ -238,6 +185,7 @@ def mutate_adapted_rate_evaluate(offspring_uniform, parent_1, parent_2, fitness_
     if generation % 3 == 0:
         new_fitness = evaluate(offspring_uniform)
 
+        print("------------------------", mutation_rate)
         mutation_rate = check(avg_population_fitness, mutation_rate, new_fitness, 0)
         mutated_offspring_1 = mutate_rate(mutation_rate, offspring_uniform[0])
 
@@ -296,7 +244,8 @@ def simplest_hybridization_climbing_hill(population, population_fit):
             amount_of_climbing += 1
             if amount_of_climbing > 30:
                 break
-            print("CLIMBING !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", amount_of_climbing, first_fitness, new_fitness)
+            print("CLIMBING !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", amount_of_climbing, first_fitness,
+                  new_fitness)
 
         if new_fitness > first_fitness:
             cleaned_pop = np.delete(population, best_index, 0)
@@ -307,7 +256,7 @@ def simplest_hybridization_climbing_hill(population, population_fit):
     return population, population_fit
 
 
-def elitism_attemp(population_data,fitness_data):
+def elitism_attemp(population_data, fitness_data):
     elitism_ratio = np.random.uniform(0.01, 0.2, 1)[0]
     new_population = int(elitism_ratio * population_data.shape[0])
 
@@ -315,7 +264,7 @@ def elitism_attemp(population_data,fitness_data):
     elitist_members = population_data[elitist_indices]
     elitist_members_fitness = fitness_data[elitist_indices]
 
-    return elitist_members,elitist_members_fitness
+    return elitist_members, elitist_members_fitness
 
 
 def probability_survival_selection(population_data, fitness_data, offspring_data):
@@ -420,7 +369,7 @@ else:
         print(f"!!!!!!!!!!!! generation number {i}")
 
         # 5 elite individuals (elitism)
-        elite_members, elite_members_fitness = elitism_attemp(whole_population,population_fitness)
+        elite_members, elite_members_fitness = elitism_attemp(whole_population, population_fitness)
 
         """ choosing crossover_method """
         offspring = two_points_crossover(whole_population, population_fitness, i)
@@ -433,8 +382,7 @@ else:
                                                                                     population_fitness)
 
         whole_population, population_fitness = probability_survival_selection(whole_population, population_fitness,
-                                                                                  offspring)
-
+                                                                              offspring)
 
         total_population_with_elites = np.vstack((whole_population, elite_members))
         total_fitness_with_elites = np.hstack((population_fitness, elite_members_fitness))
