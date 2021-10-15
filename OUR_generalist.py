@@ -1,12 +1,4 @@
-""" GENERALIST """
-""" for multiple enemies the default fitness function is this (it first creates a list of values per each enemy) 
-values.mean() - values.std()
-"""
-
-# todo: check results when starting with init pop from previous task
-
 import sys
-
 sys.path.insert(0, 'evoman')
 from environment import Environment
 from demo_controller import player_controller
@@ -16,7 +8,11 @@ import os
 from deap import base
 import random
 from deap import tools
-from pathlib import Path
+
+
+""" GENERALIST
+fitness -> values.mean() - values.std()
+"""
 
 
 def run_the_whole_experiment(enemy_number, mutate_method, iteration_num):
@@ -28,8 +24,8 @@ def run_the_whole_experiment(enemy_number, mutate_method, iteration_num):
     toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=0.1, indpb=0.2)
 
     """ set experiment parameters """
-    population_length = 50
-    generations = 20
+    population_length = 100
+    generations = 10
 
     """ constant parameters """
     n_hidden_neurons = 10
@@ -46,8 +42,6 @@ def run_the_whole_experiment(enemy_number, mutate_method, iteration_num):
     if not os.path.exists(experiment_name):
         os.makedirs(experiment_name)
 
-    # todo: next [2,6]
-
     # initializes simulation in individual evolution mode, for single static enemy.
     env = Environment(experiment_name=experiment_name,
                       enemies=enemy_number,
@@ -62,8 +56,6 @@ def run_the_whole_experiment(enemy_number, mutate_method, iteration_num):
     ini = time.time()  # sets time marker
 
     n_vars = (env.get_num_sensors() + 1) * n_hidden_neurons + (n_hidden_neurons + 1) * 5
-
-    # todo: decide if to use random seed
 
     def evaluate(x):
         return np.array(list(map(lambda y: simulation(env, y), x)))
@@ -100,9 +92,6 @@ def run_the_whole_experiment(enemy_number, mutate_method, iteration_num):
         final_parent, parent_fitness = get_best_parent_for_tournament(population, fitness_for_tournament)
         return final_parent, parent_fitness
 
-    """ WEIGHTS INITIALIZATION """
-    init_population = np.random.uniform(lower_limit, upper_limit, (population_length, n_vars))
-
     def limit_the_weights(weight):
         if weight > upper_limit:
             return upper_limit
@@ -111,13 +100,13 @@ def run_the_whole_experiment(enemy_number, mutate_method, iteration_num):
         else:
             return weight
 
-    def limit_the_sigma(weight):
-        if weight > upper_sig:
-            return upper_sig
-        elif weight < lower_sig:
-            return lower_sig
-        else:
-            return weight
+    # def limit_the_sigma(weight):
+    #     if weight > upper_sig:
+    #         return upper_sig
+    #     elif weight < lower_sig:
+    #         return lower_sig
+    #     else:
+    #         return weight
 
     def two_points_crossover(population_data, fitness_for_crossover, generation):
         first_point = int(np.random.uniform(0, n_vars, 1)[0])
@@ -180,11 +169,12 @@ def run_the_whole_experiment(enemy_number, mutate_method, iteration_num):
             new_fitness = evaluate(offspring_uniform)
 
             print("------------------------", mutation_rate)
-            mutation_rate = check(avg_population_fitness, mutation_rate, new_fitness, 0)
+            updated_mutation_rate = check(avg_population_fitness, mutation_rate, new_fitness, 0)
             mutated_offspring_1 = mutate_rate(mutation_rate, offspring_uniform[0])
 
-            mutation_rate = check(avg_population_fitness, mutation_rate, new_fitness, 1)
-            mutated_offspring_2 = mutate_rate(mutation_rate, offspring_uniform[1])
+            second_update_mutation_rate = check(avg_population_fitness, updated_mutation_rate, new_fitness, 1)
+            mutated_offspring_2 = mutate_rate(second_update_mutation_rate, offspring_uniform[1])
+            mutation_rate = second_update_mutation_rate
 
         else:
             mutated_offspring_1 = mutate_rate(mutation_rate, offspring_uniform[0])
@@ -198,30 +188,31 @@ def run_the_whole_experiment(enemy_number, mutate_method, iteration_num):
 
         return total_offspring, mutation_rate
 
-    def mutate_adapted_rate_evaluate_sigma(offspring_uniform, parent_1, parent_2,
-                                           total_offspring, generation):
-        offspring_uniform[0] = parent_1.copy()
-        offspring_uniform[1] = parent_2.copy()
-
-        mutated_offspring_1 = mutate_rate_sigma(mutation_threshold, offspring_uniform[0])
-        mutated_offspring_2 = mutate_rate_sigma(mutation_threshold, offspring_uniform[1])
-
-        mutated_offspring_1 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_1)))
-        mutated_offspring_2 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_2)))
-
-        total_offspring.append(mutated_offspring_1)
-        total_offspring.append(mutated_offspring_2)
-
-        return total_offspring
+    # def mutate_adapted_rate_evaluate_sigma(offspring_uniform, parent_1, parent_2,
+    #                                        total_offspring, generation):
+    #     offspring_uniform[0] = parent_1.copy()
+    #     offspring_uniform[1] = parent_2.copy()
+    #
+    #     mutated_offspring_1 = mutate_rate_sigma(mutation_threshold, offspring_uniform[0])
+    #     mutated_offspring_2 = mutate_rate_sigma(mutation_threshold, offspring_uniform[1])
+    #
+    #     mutated_offspring_1 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_1)))
+    #     mutated_offspring_2 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_2)))
+    #
+    #     total_offspring.append(mutated_offspring_1)
+    #     total_offspring.append(mutated_offspring_2)
+    #
+    #     return total_offspring
 
     def check(avg_population_fitness, mutation, new_fitness, parent_number):
         parent_fitness = new_fitness[parent_number]
         if parent_fitness < avg_population_fitness:
-            mutation += 0.0001
-        elif mutation > 0.0001:
-            mutation -= 0.0001
+            mutation += 0.01
+        elif mutation > 0.01:
+            mutation -= 0.01
         else:
-            mutation = 0.0001
+            mutation = 0.01
+        print("&&&&&&&&&&&&&&&&&&&&&", mutation, "&&&&&&&&&&&&&&&&&&&&&&&&")
         return mutation
 
     def mutate_rate(mutation_rate, parent_offspring):
@@ -231,13 +222,13 @@ def run_the_whole_experiment(enemy_number, mutate_method, iteration_num):
 
         return parent_offspring
 
-    def mutate_rate_sigma(parent_offspring):
-        for k in range(0, len(parent_offspring)):
-            if random.random() <= mutation_threshold:
-                sig = parent_offspring[len(parent_offspring) - 1]
-                parent_offspring[k] = parent_offspring[k] + np.random.normal(0, limit_the_sigma(sig))
-                print("sigma = ", sig)
-        return parent_offspring
+    # def mutate_rate_sigma(parent_offspring):
+    #     for k in range(0, len(parent_offspring)):
+    #         if random.random() <= mutation_threshold:
+    #             sig = parent_offspring[len(parent_offspring) - 1]
+    #             parent_offspring[k] = parent_offspring[k] + np.random.normal(0, limit_the_sigma(sig))
+    #             print("sigma = ", sig)
+    #     return parent_offspring
 
     def simplest_hybridization_climbing_hill(population, population_fit, climbing_index):
         best_fitness_indexes = np.argpartition(population_fit, -4)[-4:]
@@ -259,7 +250,7 @@ def run_the_whole_experiment(enemy_number, mutate_method, iteration_num):
                 amount_of_climbing += 1
                 if amount_of_climbing > climbing_index:
                     break
-                print("CLIMBING !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", amount_of_climbing, first_fitness,
+                print("********************* CLIMBING ********************", amount_of_climbing, first_fitness,
                       new_fitness)
 
             if new_fitness > first_fitness:
@@ -272,7 +263,7 @@ def run_the_whole_experiment(enemy_number, mutate_method, iteration_num):
         return population, population_fit, climbing_index
 
     def elitism_attemp(population_data, fitness_data):
-        elitism_ratio = np.random.uniform(0.01, 0.2, 1)[0]
+        elitism_ratio = np.random.uniform(0.1, 0.2, 1)[0]
         new_population = int(elitism_ratio * population_data.shape[0])
 
         elitist_indices = np.argpartition(fitness_data, -new_population)[-new_population:]
@@ -312,13 +303,13 @@ def run_the_whole_experiment(enemy_number, mutate_method, iteration_num):
 
         print('\nNEW EVOLUTION\n')
 
-        whole_population = np.random.uniform(lower_limit, upper_limit, (population_length, n_vars))
-        first_population_fitness = evaluate(whole_population)
+        first_whole_population = np.random.uniform(lower_limit, upper_limit, (population_length, n_vars))
+        first_population_fitness = evaluate(first_whole_population)
         best = np.argmax(first_population_fitness)
         mean = np.mean(first_population_fitness)
         std = np.std(first_population_fitness)
         ini_g = 0
-        solutions = [whole_population, first_population_fitness]
+        solutions = [first_whole_population, first_population_fitness]
         env.update_solutions(solutions)
 
     else:
@@ -326,7 +317,7 @@ def run_the_whole_experiment(enemy_number, mutate_method, iteration_num):
         print('\nCONTINUING EVOLUTION\n')
 
         env.load_state()
-        whole_population = env.solutions[0]
+        first_whole_population = env.solutions[0]
         first_population_fitness = env.solutions[1]
 
         best = np.argmax(first_population_fitness)
@@ -351,22 +342,19 @@ def run_the_whole_experiment(enemy_number, mutate_method, iteration_num):
 
     # evolution ********************************************************
 
-    last_mean = np.mean(first_population_fitness)
-    last_best = np.argmax(first_population_fitness)
-    not_improving = 0
-
     population_fitness = first_population_fitness.copy()
+    whole_population = first_whole_population.copy()
     climbing_index = 20
 
-    for i in range(ini_g + 1, generations):
+    for f in range(ini_g + 1, generations):
         print(ini_g)
-        print(f"!!!!!!!!!!!! generation number {i}")
+        print(f"!!!!!!!!!!!! generation number {f} !!!!!!!!!!!!!!")
 
         # 5 elite individuals (elitism)
         elite_members, elite_members_fitness = elitism_attemp(whole_population, population_fitness)
 
         """ choosing crossover_method """
-        offspring = two_points_crossover(whole_population, population_fitness, i)
+        offspring = two_points_crossover(whole_population, population_fitness, f)
 
         """ then evaluate the fitness scores """
         fit_offspring = evaluate(offspring)
@@ -384,29 +372,27 @@ def run_the_whole_experiment(enemy_number, mutate_method, iteration_num):
 
         # best 100 individuals from 105 based on their fitness
         best_100_indexes = np.argpartition(total_fitness_with_elites, -population_length)[-population_length:]
-        whole_population_with_elite = total_population_with_elites[best_100_indexes]
-        elite_fitness = total_fitness_with_elites[best_100_indexes]
+        whole_population = total_population_with_elites[best_100_indexes].copy()
+        population_fitness = total_fitness_with_elites[best_100_indexes].copy()
 
         """ statistics about the last fitness """
         best = np.argmax(population_fitness)
         std = np.std(population_fitness)
-        current_mean = np.mean(population_fitness)
-        current_best = np.argmax(population_fitness)
         mean = np.mean(population_fitness)
 
         # saves results
         file_aux = open(experiment_name + '/results.txt', 'a')
-        print('\n GENERATION ' + str(i) + ' ' + str(round(population_fitness[best], 6)) + ' ' + str(
+        print('\n GENERATION ' + str(f) + ' ' + str(round(population_fitness[best], 6)) + ' ' + str(
             round(mean, 6)) + ' ' + str(
             round(std, 6)))
         file_aux.write(
-            '\n' + str(i) + ' ' + str(round(population_fitness[best], 6)) + ' ' + str(round(mean, 6)) + ' ' + str(
+            '\n' + str(f) + ' ' + str(round(population_fitness[best], 6)) + ' ' + str(round(mean, 6)) + ' ' + str(
                 round(std, 6)))
         file_aux.close()
 
         # saves generation number
         file_aux = open(experiment_name + '/gen.txt', 'w')
-        file_aux.write(str(i))
+        file_aux.write(str(f))
         file_aux.close()
 
         # saves file with the best solution
@@ -426,12 +412,13 @@ def run_the_whole_experiment(enemy_number, mutate_method, iteration_num):
     env.state_to_log()  # checks environment state
 
 
-""" 'train' TO START THE EVOLUTION or 'test' TO TEST THE RESULTS  """
-choose_run_mode = 'train'
+""" 'train' or 'test' mode """
+choose_run_mode = "train"
 
-""" CHOOSE THE NAME OF THE CROSSOVER METHOD 'uniform' or 'two_points' """
-mutation_method = "deap"
+""" choose mutation method "deap" or "adaptive" """
+mutation_method = "adaptive"
 
+# next do [2, 6]
 enemies_num = [7, 8]
 
 for i in range(1, 11):
