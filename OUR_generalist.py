@@ -18,6 +18,8 @@ import random
 from deap import tools
 from pathlib import Path
 
+np.random.seed(420)
+
 """ set a train or a test mode """
 run_mode = "train"
 
@@ -26,7 +28,7 @@ survival_method = "probability"  # probability or elitism
 mutation_method = "adaptive"  # deap or adaptive
 
 """ set experiment name """
-experiment_name = "enemy_7_8_" + survival_method + "_" + mutation_method + "_mutation_0.0001"
+experiment_name = "enemy_7_8_" + survival_method + "_" + mutation_method + "_self_adap_no_climb"
 
 """ set mutation settings """
 toolbox = base.Toolbox()
@@ -41,6 +43,8 @@ n_hidden_neurons = 10
 lower_limit = -1
 upper_limit = 1
 mutation_threshold = 0.2
+upper_sig= 0
+lower_sig= 0.5
 
 headless = True
 if headless:
@@ -53,7 +57,7 @@ if not os.path.exists(experiment_name):
 
 # initializes simulation in individual evolution mode, for single static enemy.
 env = Environment(experiment_name=experiment_name,
-                  enemies=[7, 8],
+                  enemies=[4, 8],
                   multiplemode="yes",
                   playermode="ai",
                   player_controller=player_controller(n_hidden_neurons),
@@ -64,7 +68,7 @@ env = Environment(experiment_name=experiment_name,
 env.state_to_log()  # checks environment state
 ini = time.time()  # sets time marker
 
-n_vars = (env.get_num_sensors() + 1) * n_hidden_neurons + (n_hidden_neurons + 1) * 5
+n_vars =  ((env.get_num_sensors() + 1) * n_hidden_neurons + (n_hidden_neurons + 1) * 5)
 
 
 # todo: decide if to use random seed
@@ -121,6 +125,13 @@ def limit_the_weights(weight):
     else:
         return weight
 
+def limit_the_sigma(weight):
+    if weight > upper_sig:
+        return upper_sig
+    elif weight < lower_sig:
+        return lower_sig
+    else:
+        return weight
 
 def two_points_crossover(population_data, fitness_for_crossover, generation):
     first_point = int(np.random.uniform(0, n_vars, 1)[0])
@@ -182,19 +193,19 @@ def mutate_adapted_rate_evaluate(offspring_uniform, parent_1, parent_2, fitness_
 
     avg_population_fitness = np.average(fitness_for_crossover)
 
-    if generation % 3 == 0:
-        new_fitness = evaluate(offspring_uniform)
-
-        print("------------------------", mutation_rate)
-        mutation_rate = check(avg_population_fitness, mutation_rate, new_fitness, 0)
-        mutated_offspring_1 = mutate_rate(mutation_rate, offspring_uniform[0])
-
-        mutation_rate = check(avg_population_fitness, mutation_rate, new_fitness, 1)
-        mutated_offspring_2 = mutate_rate(mutation_rate, offspring_uniform[1])
-
-    else:
-        mutated_offspring_1 = mutate_rate(mutation_rate, offspring_uniform[0])
-        mutated_offspring_2 = mutate_rate(mutation_rate, offspring_uniform[1])
+    # if generation % 3 == 0:
+    #     new_fitness = evaluate(offspring_uniform)
+    #
+    #     print("------------------------", mutation_rate)
+    #     mutation_rate = check(avg_population_fitness, mutation_rate, new_fitness, 0)
+    #     mutated_offspring_1 = mutate_rate(mutation_rate, offspring_uniform[0])
+    #
+    #     mutation_rate = check(avg_population_fitness, mutation_rate, new_fitness, 1)
+    #     mutated_offspring_2 = mutate_rate(mutation_rate, offspring_uniform[1])
+    #
+    # else:
+    mutated_offspring_1 = mutate_rate(mutation_threshold, offspring_uniform[0])
+    mutated_offspring_2 = mutate_rate(mutation_threshold, offspring_uniform[1])
 
     mutated_offspring_1 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_1)))
     mutated_offspring_2 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_2)))
@@ -219,8 +230,9 @@ def check(avg_population_fitness, mutation, new_fitness, parent_number):
 def mutate_rate(mutation_rate, parent_offspring):
     for k in range(0, len(parent_offspring)):
         if random.random() <= mutation_rate:
-            parent_offspring[k] = parent_offspring[k] + np.random.normal(0, 0.2)
-
+            sig = parent_offspring[len(parent_offspring)-1]
+            parent_offspring[k] = parent_offspring[k] + np.random.normal(0, limit_the_sigma(sig))
+            print("sigma = ", sig)
     return parent_offspring
 
 
@@ -236,7 +248,7 @@ def simplest_hybridization_climbing_hill(population, population_fit):
         climb_mutation_rate = 0.2
         amount_of_climbing = 0
         while new_fitness <= first_fitness:
-            for p in range(len(first_individual)):
+            for p in range(len(first_individual)-1):
                 if random.random() <= climb_mutation_rate:
                     new_individual[p] = first_individual[p] + np.random.normal(0, 0.25)
 
@@ -320,6 +332,7 @@ else:
         print('\nNEW EVOLUTION\n')
 
         whole_population = np.random.uniform(lower_limit, upper_limit, (population_length, n_vars))
+
         first_population_fitness = evaluate(whole_population)
         best = np.argmax(first_population_fitness)
         mean = np.mean(first_population_fitness)
@@ -378,8 +391,8 @@ else:
         fit_offspring = evaluate(offspring)
 
         """ does replacement """
-        whole_population, population_fitness = simplest_hybridization_climbing_hill(whole_population,
-                                                                                    population_fitness)
+        #whole_population, population_fitness = simplest_hybridization_climbing_hill(whole_population,
+        #                                                                            population_fitness)
 
         whole_population, population_fitness = probability_survival_selection(whole_population, population_fitness,
                                                                               offspring)
