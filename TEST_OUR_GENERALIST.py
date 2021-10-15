@@ -8,7 +8,7 @@ import os
 from pathlib import Path
 
 
-path_to_best_solution = "enemy_2_6_probability_adaptive_mutation_0.0001"
+path_to_best_solution = "enemy_1_2_5_probability_adaptive_mutation_0.0001"
 
 
 n_hidden_neurons = 10

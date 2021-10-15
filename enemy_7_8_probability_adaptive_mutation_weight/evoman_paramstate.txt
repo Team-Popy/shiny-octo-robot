@@ -1,5 +1,5 @@
 
-enemies 1 5 8
+enemies 7 8
 timeexpire 3000
 level 2
 enemyn 8

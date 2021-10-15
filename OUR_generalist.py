@@ -26,7 +26,7 @@ survival_method = "probability"  # probability or elitism
 mutation_method = "adaptive"  # deap or adaptive
 
 """ set experiment name """
-experiment_name = "enemy_1_2_5_" + survival_method + "_" + mutation_method + "_mutation_0.0001"
+experiment_name = "enemy_7_8_" + survival_method + "_" + mutation_method + "_mutation_weight"
 
 """ set mutation settings """
 toolbox = base.Toolbox()
@@ -34,7 +34,7 @@ toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=0.1, indpb=0.2)
 
 """ set experiment parameters """
 population_length = 50
-generations = 20
+generations = 10
 
 """ constant parameters """
 n_hidden_neurons = 10
@@ -53,7 +53,7 @@ if not os.path.exists(experiment_name):
 
 # initializes simulation in individual evolution mode, for single static enemy.
 env = Environment(experiment_name=experiment_name,
-                  enemies=[1,2,5],
+                  enemies=[7,8],
                   multiplemode="yes",
                   playermode="ai",
                   player_controller=player_controller(n_hidden_neurons),
@@ -186,40 +186,43 @@ def mutate_adapted_rate_evaluate(offspring_uniform, parent_1, parent_2, fitness_
         new_fitness = evaluate(offspring_uniform)
 
         print("------------------------", mutation_rate)
-        mutation_rate = check(avg_population_fitness, mutation_rate, new_fitness, 0)
+        mutation_rate = check(avg_population_fitness, mutation_rate, new_fitness, 0,
+                              offspring_uniform[0][len(offspring_uniform[0]) - 1])
+
         mutated_offspring_1 = mutate_rate(mutation_rate, offspring_uniform[0])
 
-        mutation_rate = check(avg_population_fitness, mutation_rate, new_fitness, 1)
+        mutation_rate = check(avg_population_fitness, mutation_rate, new_fitness, 1,
+                              offspring_uniform[1][len(offspring_uniform[1]) - 1])
         mutated_offspring_2 = mutate_rate(mutation_rate, offspring_uniform[1])
 
     else:
         mutated_offspring_1 = mutate_rate(mutation_rate, offspring_uniform[0])
         mutated_offspring_2 = mutate_rate(mutation_rate, offspring_uniform[1])
 
-    mutated_offspring_1 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_1)))
-    mutated_offspring_2 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_2)))
+        mutated_offspring_1 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_1)))
+        mutated_offspring_2 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_2)))
 
-    total_offspring.append(mutated_offspring_1)
-    total_offspring.append(mutated_offspring_2)
+        total_offspring.append(mutated_offspring_1)
+        total_offspring.append(mutated_offspring_2)
 
     return total_offspring, mutation_rate
 
 
-def check(avg_population_fitness, mutation, new_fitness, parent_number):
+def check(avg_population_fitness, mutation, new_fitness, parent_number, weight):
     parent_fitness = new_fitness[parent_number]
     if parent_fitness < avg_population_fitness:
-        mutation += 0.0001
-    elif mutation > 0.0001:
-        mutation -= 0.0001
+        mutation += weight
+    elif mutation > weight:
+        mutation -= weight
     else:
-        mutation = 0.0001
+        mutation = weight
     return mutation
 
 
 def mutate_rate(mutation_rate, parent_offspring):
     for k in range(0, len(parent_offspring)):
-        if random.random() <= mutation_rate:
-            parent_offspring[k] = parent_offspring[k] + np.random.normal(0, 0.2)
+        if random.random() <= mutation_threshold:
+            parent_offspring[k] = parent_offspring[k] + mutation_rate
 
     return parent_offspring
 
