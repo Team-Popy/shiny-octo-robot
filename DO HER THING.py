@@ -28,7 +28,7 @@ survival_method = "probability"  # probability or elitism
 mutation_method = "adaptive"  # deap or adaptive
 
 """ set experiment name """
-experiment_name = "A_FINAL_TRIAL_enemy_1_2_5_" + survival_method + "_" + mutation_method + "_yes_self_yes_climb_mut_sig_15_gen"
+experiment_name = "enemy_7_8_" + survival_method + "_" + mutation_method + "_self_adap_no_climb"
 
 """ set mutation settings """
 toolbox = base.Toolbox()
@@ -36,15 +36,15 @@ toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=0.1, indpb=0.2)
 
 """ set experiment parameters """
 population_length = 100
-generations = 15
+generations = 10
 
 """ constant parameters """
 n_hidden_neurons = 10
 lower_limit = -1
 upper_limit = 1
 mutation_threshold = 0.2
-upper_sig= 1
-lower_sig= 0
+upper_sig= 0
+lower_sig= 0.5
 
 headless = True
 if headless:
@@ -57,7 +57,7 @@ if not os.path.exists(experiment_name):
 
 # initializes simulation in individual evolution mode, for single static enemy.
 env = Environment(experiment_name=experiment_name,
-                  enemies=[1,2,5],
+                  enemies=[4, 8],
                   multiplemode="yes",
                   playermode="ai",
                   player_controller=player_controller(n_hidden_neurons),
@@ -228,12 +228,11 @@ def check(avg_population_fitness, mutation, new_fitness, parent_number):
 
 
 def mutate_rate(mutation_rate, parent_offspring):
-    print("NEW INDIVIDUAL")
     for k in range(0, len(parent_offspring)):
         if random.random() <= mutation_rate:
             sig = parent_offspring[len(parent_offspring)-1]
             parent_offspring[k] = parent_offspring[k] + np.random.normal(0, limit_the_sigma(sig))
-    print("sigma = ", limit_the_sigma(parent_offspring[len(parent_offspring) - 1]))
+            print("sigma = ", sig)
     return parent_offspring
 
 
@@ -249,7 +248,7 @@ def simplest_hybridization_climbing_hill(population, population_fit):
         climb_mutation_rate = 0.2
         amount_of_climbing = 0
         while new_fitness <= first_fitness:
-            for p in range(len(first_individual)):
+            for p in range(len(first_individual)-1):
                 if random.random() <= climb_mutation_rate:
                     new_individual[p] = first_individual[p] + np.random.normal(0, 0.25)
 
@@ -392,8 +391,8 @@ else:
         fit_offspring = evaluate(offspring)
 
         """ does replacement """
-        whole_population, population_fitness = simplest_hybridization_climbing_hill(whole_population,
-                                                                                    population_fitness)
+        #whole_population, population_fitness = simplest_hybridization_climbing_hill(whole_population,
+        #                                                                            population_fitness)
 
         whole_population, population_fitness = probability_survival_selection(whole_population, population_fitness,
                                                                               offspring)
