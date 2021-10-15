@@ -237,7 +237,7 @@ def mutate_rate(mutation_rate, parent_offspring):
     return parent_offspring
 
 
-def simplest_hybridization_climbing_hill(population, population_fit):
+def simplest_hybridization_climbing_hill(population, population_fit, climbing_index):
     best_fitness_indexes = np.argpartition(population_fit, -4)[-4:]
 
     for best_index in best_fitness_indexes:
@@ -255,7 +255,7 @@ def simplest_hybridization_climbing_hill(population, population_fit):
 
             new_fitness = evaluate([new_individual])
             amount_of_climbing += 1
-            if amount_of_climbing > 30:
+            if amount_of_climbing > climbing_index:
                 break
             print("CLIMBING !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", amount_of_climbing, first_fitness,
                   new_fitness)
@@ -266,7 +266,8 @@ def simplest_hybridization_climbing_hill(population, population_fit):
             population = np.vstack((new_individual, cleaned_pop))
             population_fit = np.hstack((new_fitness, cleaned_fitness))
 
-    return population, population_fit
+    climbing_index -= 1
+    return population, population_fit, climbing_index
 
 
 def elitism_attemp(population_data, fitness_data):
@@ -392,8 +393,9 @@ else:
         fit_offspring = evaluate(offspring)
 
         """ does replacement """
-        whole_population, population_fitness = simplest_hybridization_climbing_hill(whole_population,
-                                                                                    population_fitness)
+        climbing_index = 20
+        whole_population, population_fitness, climbing_index = simplest_hybridization_climbing_hill(whole_population,
+                                                                                    population_fitness, climbing_index)
 
         whole_population, population_fitness = probability_survival_selection(whole_population, population_fitness,
                                                                               offspring)
