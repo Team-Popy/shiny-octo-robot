@@ -43,8 +43,8 @@ n_hidden_neurons = 10
 lower_limit = -1
 upper_limit = 1
 mutation_threshold = 0.2
-upper_sig= 0
-lower_sig= 0.5
+upper_sig = 0
+lower_sig = 0.5
 
 headless = True
 if headless:
@@ -68,7 +68,7 @@ env = Environment(experiment_name=experiment_name,
 env.state_to_log()  # checks environment state
 ini = time.time()  # sets time marker
 
-n_vars =  ((env.get_num_sensors() + 1) * n_hidden_neurons + (n_hidden_neurons + 1) * 5)
+n_vars = ((env.get_num_sensors() + 1) * n_hidden_neurons + (n_hidden_neurons + 1) * 5)
 
 
 # todo: decide if to use random seed
@@ -125,6 +125,7 @@ def limit_the_weights(weight):
     else:
         return weight
 
+
 def limit_the_sigma(weight):
     if weight > upper_sig:
         return upper_sig
@@ -132,6 +133,7 @@ def limit_the_sigma(weight):
         return lower_sig
     else:
         return weight
+
 
 def two_points_crossover(population_data, fitness_for_crossover, generation):
     first_point = int(np.random.uniform(0, n_vars, 1)[0])
@@ -230,7 +232,7 @@ def check(avg_population_fitness, mutation, new_fitness, parent_number):
 def mutate_rate(mutation_rate, parent_offspring):
     for k in range(0, len(parent_offspring)):
         if random.random() <= mutation_rate:
-            sig = parent_offspring[len(parent_offspring)-1]
+            sig = parent_offspring[len(parent_offspring) - 1]
             parent_offspring[k] = parent_offspring[k] + np.random.normal(0, limit_the_sigma(sig))
             print("sigma = ", sig)
     return parent_offspring
@@ -248,7 +250,7 @@ def simplest_hybridization_climbing_hill(population, population_fit):
         climb_mutation_rate = 0.2
         amount_of_climbing = 0
         while new_fitness <= first_fitness:
-            for p in range(len(first_individual)-1):
+            for p in range(len(first_individual) - 1):
                 if random.random() <= climb_mutation_rate:
                     new_individual[p] = first_individual[p] + np.random.normal(0, 0.25)
 
@@ -391,7 +393,7 @@ else:
         fit_offspring = evaluate(offspring)
 
         """ does replacement """
-        #whole_population, population_fitness = simplest_hybridization_climbing_hill(whole_population,
+        # whole_population, population_fitness = simplest_hybridization_climbing_hill(whole_population,
         #                                                                            population_fitness)
 
         whole_population, population_fitness = probability_survival_selection(whole_population, population_fitness,
