@@ -28,7 +28,7 @@ survival_method = "probability"  # probability or elitism
 mutation_method = "adaptive"  # deap or adaptive
 
 """ set experiment name """
-experiment_name = "A_FINAL_TRIAL_enemy_1_2_5_" + survival_method + "_" + mutation_method + "_yes_self_yes_climb_mut_sig_15_gen"
+experiment_name = "enemy_1_2_5_" + survival_method + "_" + mutation_method + "_mutation_0.0001"
 
 """ set mutation settings """
 toolbox = base.Toolbox()
