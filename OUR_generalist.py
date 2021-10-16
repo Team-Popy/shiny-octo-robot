@@ -100,13 +100,13 @@ def run_the_whole_experiment(enemy_number, mutate_method, iteration_num):
         else:
             return weight
 
-    # def limit_the_sigma(weight):
-    #     if weight > upper_sig:
-    #         return upper_sig
-    #     elif weight < lower_sig:
-    #         return lower_sig
-    #     else:
-    #         return weight
+    def limit_the_sigma(weight):
+        if weight > upper_sig:
+            return upper_sig
+        elif weight < lower_sig:
+            return lower_sig
+        else:
+            return weight
 
     def two_points_crossover(population_data, fitness_for_crossover, generation):
         first_point = int(np.random.uniform(0, n_vars, 1)[0])
@@ -188,21 +188,21 @@ def run_the_whole_experiment(enemy_number, mutate_method, iteration_num):
 
         return total_offspring, mutation_rate
 
-    # def mutate_adapted_rate_evaluate_sigma(offspring_uniform, parent_1, parent_2,
-    #                                        total_offspring, generation):
-    #     offspring_uniform[0] = parent_1.copy()
-    #     offspring_uniform[1] = parent_2.copy()
-    #
-    #     mutated_offspring_1 = mutate_rate_sigma(mutation_threshold, offspring_uniform[0])
-    #     mutated_offspring_2 = mutate_rate_sigma(mutation_threshold, offspring_uniform[1])
-    #
-    #     mutated_offspring_1 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_1)))
-    #     mutated_offspring_2 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_2)))
-    #
-    #     total_offspring.append(mutated_offspring_1)
-    #     total_offspring.append(mutated_offspring_2)
-    #
-    #     return total_offspring
+    def mutate_adapted_rate_evaluate_sigma(offspring_uniform, parent_1, parent_2,
+                                           total_offspring, generation):
+        offspring_uniform[0] = parent_1.copy()
+        offspring_uniform[1] = parent_2.copy()
+
+        mutated_offspring_1 = mutate_rate_sigma(mutation_threshold, offspring_uniform[0])
+        mutated_offspring_2 = mutate_rate_sigma(mutation_threshold, offspring_uniform[1])
+
+        mutated_offspring_1 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_1)))
+        mutated_offspring_2 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_2)))
+
+        total_offspring.append(mutated_offspring_1)
+        total_offspring.append(mutated_offspring_2)
+
+        return total_offspring
 
     def check(avg_population_fitness, mutation, new_fitness, parent_number):
         parent_fitness = new_fitness[parent_number]
@@ -222,13 +222,13 @@ def run_the_whole_experiment(enemy_number, mutate_method, iteration_num):
 
         return parent_offspring
 
-    # def mutate_rate_sigma(parent_offspring):
-    #     for k in range(0, len(parent_offspring)):
-    #         if random.random() <= mutation_threshold:
-    #             sig = parent_offspring[len(parent_offspring) - 1]
-    #             parent_offspring[k] = parent_offspring[k] + np.random.normal(0, limit_the_sigma(sig))
-    #             print("sigma = ", sig)
-    #     return parent_offspring
+    def mutate_rate_sigma(parent_offspring):
+        for k in range(0, len(parent_offspring)):
+            if random.random() <= mutation_threshold:
+                sig = parent_offspring[len(parent_offspring) - 1]
+                parent_offspring[k] = parent_offspring[k] + np.random.normal(0, limit_the_sigma(sig))
+                print("sigma = ", sig)
+        return parent_offspring
 
     def simplest_hybridization_climbing_hill(population, population_fit, climbing_index):
         best_fitness_indexes = np.argpartition(population_fit, -4)[-4:]
