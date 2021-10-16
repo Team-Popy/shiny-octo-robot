@@ -132,8 +132,11 @@ def run_the_whole_experiment(enemy_number, mutate_method, iteration_num):
                 total_offspring, mutation_rate = mutate_adapted_rate_evaluate(offspring_crossover, parent_1, parent_2,
                                                                               fitness_for_crossover, total_offspring,
                                                                               mutation_rate, generation)
-            else:
-                total_offspring = [parent_1, parent_2]
+            elif mutate_method == "self_adaptive":
+                total_offspring = mutate_adapted_rate_evaluate_sigma(offspring_crossover, parent_1, parent_2,
+                                                                     total_offspring)
+            # else:
+            #     total_offspring = [parent_1, parent_2]
 
         final_total_offspring = np.vstack(total_offspring)
         return final_total_offspring
@@ -189,12 +192,12 @@ def run_the_whole_experiment(enemy_number, mutate_method, iteration_num):
         return total_offspring, mutation_rate
 
     def mutate_adapted_rate_evaluate_sigma(offspring_uniform, parent_1, parent_2,
-                                           total_offspring, generation):
+                                           total_offspring):
         offspring_uniform[0] = parent_1.copy()
         offspring_uniform[1] = parent_2.copy()
 
-        mutated_offspring_1 = mutate_rate_sigma(mutation_threshold, offspring_uniform[0])
-        mutated_offspring_2 = mutate_rate_sigma(mutation_threshold, offspring_uniform[1])
+        mutated_offspring_1 = mutate_rate_sigma(offspring_uniform[0])
+        mutated_offspring_2 = mutate_rate_sigma(offspring_uniform[1])
 
         mutated_offspring_1 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_1)))
         mutated_offspring_2 = np.array(list(map(lambda y: limit_the_weights(y), mutated_offspring_2)))
@@ -227,7 +230,6 @@ def run_the_whole_experiment(enemy_number, mutate_method, iteration_num):
             if random.random() <= mutation_threshold:
                 sig = parent_offspring[len(parent_offspring) - 1]
                 parent_offspring[k] = parent_offspring[k] + np.random.normal(0, limit_the_sigma(sig))
-                print("sigma = ", sig)
         return parent_offspring
 
     def simplest_hybridization_climbing_hill(population, population_fit, climbing_index):
@@ -415,7 +417,7 @@ def run_the_whole_experiment(enemy_number, mutate_method, iteration_num):
 """ 'train' or 'test' mode """
 choose_run_mode = "train"
 
-""" choose mutation method "deap" or "adaptive" """
+""" choose mutation method "deap", "adaptive" or "self_adaptive" """
 mutation_method = "adaptive"
 
 # next do [2, 6]
