@@ -65,6 +65,7 @@ def run_the_whole_experiment(enemy_number, mutate_method, iteration_num):
                                        ", time: " + str(game_time_result) +
                                        ", gain_number: " + str(i) +
                                        ", gain: " + str(gain))
+
                 test_scores.close()
                 fim = time.time()  # prints total execution time for experiment
                 print('\nExecution time: ' + str(round((fim - ini) / 60)) + ' minutes \n')
@@ -73,6 +74,7 @@ def run_the_whole_experiment(enemy_number, mutate_method, iteration_num):
                 env.state_to_log()  # checks environment state
 
     evaluate_the_enemies_5_times(path_to_best_solution)
+
 
 
 enemy_number = [7,8]  # enemy group
