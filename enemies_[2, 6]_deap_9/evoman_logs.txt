@@ -50,7 +50,7 @@ save logs: yes
 
 PARAMETER CHANGE: speed = normal
 
-RUN: run status: enemy: 8; fitness: 83.92621389609809; player life: 1.000000000000234; enemy life: 0; time: 480
+RUN: run status: enemy: 8; fitness: 87.1249280777976; player life: 29.80000000000026; enemy life: 0; time: 349
 
 ########## Simulation state - INI ###########
 
