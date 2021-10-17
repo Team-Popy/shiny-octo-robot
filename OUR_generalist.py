@@ -422,5 +422,5 @@ mutation_method = "adaptive"
 
 enemies_num = [2, 6]
 
-for i in range(1, 11):
+for i in range(8, 11):
     run_the_whole_experiment(enemies_num, mutation_method, i)

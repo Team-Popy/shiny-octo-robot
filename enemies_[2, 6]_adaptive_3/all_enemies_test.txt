@@ -1,0 +1,8 @@
+
+-----------------------------------------
+enemy: 1, fitness: 4.02, player: 0.0, enemy: 90.0, time: 146.0
+enemy: 1, fitness: -4.77, player: 0.0, enemy: 100.0, time: 118.0
+enemy: 1, fitness: -5.2, player: 0.0, enemy: 100.0, time: 181.0
+enemy: 1, fitness: -5.2, player: 0.0, enemy: 100.0, time: 181.0
+enemy: 1, fitness: -4.77, player: 0.0, enemy: 100.0, time: 118.0
+-----------------------------------------
