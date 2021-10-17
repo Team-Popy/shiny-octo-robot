@@ -420,8 +420,7 @@ choose_run_mode = "train"
 """ choose mutation method "deap", "adaptive" or "self_adaptive" """
 mutation_method = "adaptive"
 
-# next do [2, 6]
-enemies_num = [7, 8]
+enemies_num = [2, 6]
 
-for i in range(1, 11):
+for i in range(8, 11):
     run_the_whole_experiment(enemies_num, mutation_method, i)
