@@ -14,9 +14,9 @@ MESSAGE: Pygame initialized for simulation.
 
 multiple mode: no
 
-enemies list: 2
+enemies list: 5
 
-current enemy: 2
+current enemy: 5
 
 player mode: ai
 
