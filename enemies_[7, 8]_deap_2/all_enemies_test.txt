@@ -1,0 +1,49 @@
+
+-----------------------------------------
+enemy: 1, fitness: 12.77, player: 0.0, enemy: 80.0, time: 186.0
+enemy: 1, fitness: 4.46, player: 0.0, enemy: 90.0, time: 94.0
+enemy: 1, fitness: 12.98, player: 0.0, enemy: 80.0, time: 151.0
+enemy: 1, fitness: 4.46, player: 0.0, enemy: 90.0, time: 94.0
+enemy: 1, fitness: 4.46, player: 0.0, enemy: 90.0, time: 94.0
+-----------------------------------------
+enemy: 2, fitness: 90.69, player: 58.0, enemy: 0.0, time: 165.0
+enemy: 2, fitness: 90.69, player: 58.0, enemy: 0.0, time: 165.0
+enemy: 2, fitness: 86.63, player: 16.0, enemy: 0.0, time: 144.0
+enemy: 2, fitness: 89.45, player: 48.0, enemy: 0.0, time: 210.0
+enemy: 2, fitness: 90.69, player: 58.0, enemy: 0.0, time: 165.0
+-----------------------------------------
+enemy: 3, fitness: 21.16, player: 0.0, enemy: 70.0, time: 343.0
+enemy: 3, fitness: 21.83, player: 0.0, enemy: 70.0, time: 176.0
+enemy: 3, fitness: 21.16, player: 0.0, enemy: 70.0, time: 343.0
+enemy: 3, fitness: 21.83, player: 0.0, enemy: 70.0, time: 176.0
+enemy: 3, fitness: 21.16, player: 0.0, enemy: 70.0, time: 343.0
+-----------------------------------------
+enemy: 4, fitness: 12.03, player: 0.0, enemy: 80.0, time: 393.0
+enemy: 4, fitness: 12.03, player: 0.0, enemy: 80.0, time: 393.0
+enemy: 4, fitness: 12.03, player: 0.0, enemy: 80.0, time: 393.0
+enemy: 4, fitness: 12.03, player: 0.0, enemy: 80.0, time: 393.0
+enemy: 4, fitness: 12.07, player: 0.0, enemy: 80.0, time: 378.0
+-----------------------------------------
+enemy: 5, fitness: 29.59, player: 0.0, enemy: 60.0, time: 609.0
+enemy: 5, fitness: 87.77, player: 34.00000000000027, enemy: 0.0, time: 279.0
+enemy: 5, fitness: 91.87, player: 71.20000000000027, enemy: 0.0, time: 190.0
+enemy: 5, fitness: 20.64, player: 0.0, enemy: 70.0, time: 580.0
+enemy: 5, fitness: 86.74, player: 25.00000000000025, enemy: 0.0, time: 318.0
+-----------------------------------------
+enemy: 6, fitness: 12.96, player: 0.0, enemy: 80.0, time: 155.0
+enemy: 6, fitness: 12.96, player: 0.0, enemy: 80.0, time: 155.0
+enemy: 6, fitness: 48.52, player: 0.0, enemy: 40.0, time: 240.0
+enemy: 6, fitness: 21.41, player: 0.0, enemy: 70.0, time: 268.0
+enemy: 6, fitness: 21.88, player: 0.0, enemy: 70.0, time: 167.0
+-----------------------------------------
+enemy: 7, fitness: 66.54, player: 0.0, enemy: 20.0, time: 234.0
+enemy: 7, fitness: 74.95, player: 0.0, enemy: 10.0, time: 422.0
+enemy: 7, fitness: 89.52, player: 51.40000000000031, enemy: 0.0, time: 276.0
+enemy: 7, fitness: 74.95, player: 0.0, enemy: 10.0, time: 422.0
+enemy: 7, fitness: 89.52, player: 51.40000000000031, enemy: 0.0, time: 276.0
+-----------------------------------------
+enemy: 8, fitness: 88.98, player: 47.8000000000003, enemy: 0.0, time: 330.0
+enemy: 8, fitness: 88.98, player: 47.8000000000003, enemy: 0.0, time: 330.0
+enemy: 8, fitness: 91.08, player: 65.80000000000032, enemy: 0.0, time: 244.0
+enemy: 8, fitness: 89.63, player: 52.600000000000314, enemy: 0.0, time: 279.0
+enemy: 8, fitness: 89.63, player: 52.600000000000314, enemy: 0.0, time: 279.0

@@ -72,7 +72,7 @@ def run_the_whole_experiment(enemy_number, mutate_method, iteration_num):
     evaluate_the_enemies_5_times(path_to_best_solution)
 
 
-enemy_number = [7, 8]  # enemy group
+enemy_number = [2,6]  # enemy group
 mutate_method = "adaptive"  # deap / adaptive
 
 for i in range(1, 11):
