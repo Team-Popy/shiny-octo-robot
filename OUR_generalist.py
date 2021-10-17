@@ -417,10 +417,11 @@ def run_the_whole_experiment(enemy_number, mutate_method, iteration_num):
 """ 'train' or 'test' mode """
 choose_run_mode = "train"
 
-""" choose mutation method "deap", "adaptive" or "self_adaptive" """
-mutation_method = "adaptive"
+""" choose mutation method "deap" or "adaptive" """
+mutation_method = "deap"
 
-enemies_num = [2, 6]
+# next do [2, 6]
+enemies_num = [2,6]
 
 for i in range(8, 11):
     run_the_whole_experiment(enemies_num, mutation_method, i)

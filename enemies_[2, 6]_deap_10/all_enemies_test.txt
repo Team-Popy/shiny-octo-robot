@@ -1,0 +1,49 @@
+
+-----------------------------------------
+enemy: 1, fitness: 13.47, player: 0.0, enemy: 80.0, time: 93.0, gain_number: 1, gain: -80.0
+enemy: 1, fitness: 12.96, player: 0.0, enemy: 80.0, time: 155.0, gain_number: 2, gain: -80.0
+enemy: 1, fitness: 13.47, player: 0.0, enemy: 80.0, time: 93.0, gain_number: 3, gain: -80.0
+enemy: 1, fitness: 13.23, player: 0.0, enemy: 80.0, time: 118.0, gain_number: 4, gain: -80.0
+enemy: 1, fitness: 13.23, player: 0.0, enemy: 80.0, time: 118.0, gain_number: 5, gain: -80.0
+-----------------------------------------
+enemy: 2, fitness: 88.09, player: 32.0, enemy: 0.0, time: 166.0, gain_number: 1, gain: 32.0
+enemy: 2, fitness: 87.57, player: 30.0, enemy: 0.0, time: 228.0, gain_number: 2, gain: 30.0
+enemy: 2, fitness: 90.73, player: 60.0, enemy: 0.0, time: 194.0, gain_number: 3, gain: 60.0
+enemy: 2, fitness: 90.25, player: 56.0, enemy: 0.0, time: 210.0, gain_number: 4, gain: 56.0
+enemy: 2, fitness: 88.09, player: 32.0, enemy: 0.0, time: 166.0, gain_number: 5, gain: 32.0
+-----------------------------------------
+enemy: 3, fitness: 12.95, player: 0.0, enemy: 80.0, time: 156.0, gain_number: 1, gain: -80.0
+enemy: 3, fitness: 22.75, player: 0.0, enemy: 70.0, time: 70.0, gain_number: 2, gain: -70.0
+enemy: 3, fitness: 22.75, player: 0.0, enemy: 70.0, time: 70.0, gain_number: 3, gain: -70.0
+enemy: 3, fitness: 12.95, player: 0.0, enemy: 80.0, time: 156.0, gain_number: 4, gain: -80.0
+enemy: 3, fitness: 12.95, player: 0.0, enemy: 80.0, time: 156.0, gain_number: 5, gain: -80.0
+-----------------------------------------
+enemy: 4, fitness: 48.16, player: 0.0, enemy: 40.0, time: 345.0, gain_number: 1, gain: -40.0
+enemy: 4, fitness: 39.22, player: 0.0, enemy: 50.0, time: 324.0, gain_number: 2, gain: -50.0
+enemy: 4, fitness: 39.23, player: 0.0, enemy: 50.0, time: 322.0, gain_number: 3, gain: -50.0
+enemy: 4, fitness: 39.22, player: 0.0, enemy: 50.0, time: 324.0, gain_number: 4, gain: -50.0
+enemy: 4, fitness: 39.29, player: 0.0, enemy: 50.0, time: 301.0, gain_number: 5, gain: -50.0
+-----------------------------------------
+enemy: 5, fitness: 38.91, player: 0.0, enemy: 50.0, time: 441.0, gain_number: 1, gain: -50.0
+enemy: 5, fitness: 38.99, player: 0.0, enemy: 50.0, time: 406.0, gain_number: 2, gain: -50.0
+enemy: 5, fitness: 90.47, player: 59.80000000000033, enemy: 0.0, time: 248.0, gain_number: 3, gain: 59.80000000000033
+enemy: 5, fitness: 38.91, player: 0.0, enemy: 50.0, time: 442.0, gain_number: 4, gain: -50.0
+enemy: 5, fitness: 29.88, player: 0.0, enemy: 60.0, time: 455.0, gain_number: 5, gain: -60.0
+-----------------------------------------
+enemy: 6, fitness: 30.64, player: 0.0, enemy: 60.0, time: 212.0, gain_number: 1, gain: -60.0
+enemy: 6, fitness: 57.53, player: 0.0, enemy: 30.0, time: 238.0, gain_number: 2, gain: -30.0
+enemy: 6, fitness: 31.04, player: 0.0, enemy: 60.0, time: 142.0, gain_number: 3, gain: -60.0
+enemy: 6, fitness: 31.04, player: 0.0, enemy: 60.0, time: 142.0, gain_number: 4, gain: -60.0
+enemy: 6, fitness: 30.64, player: 0.0, enemy: 60.0, time: 212.0, gain_number: 5, gain: -60.0
+-----------------------------------------
+enemy: 7, fitness: 57.29, player: 0.0, enemy: 30.0, time: 302.0, gain_number: 1, gain: -30.0
+enemy: 7, fitness: 66.61, player: 0.0, enemy: 20.0, time: 220.0, gain_number: 2, gain: -20.0
+enemy: 7, fitness: 66.61, player: 0.0, enemy: 20.0, time: 220.0, gain_number: 3, gain: -20.0
+enemy: 7, fitness: 30.66, player: 0.0, enemy: 60.0, time: 209.0, gain_number: 4, gain: -60.0
+enemy: 7, fitness: 57.29, player: 0.0, enemy: 30.0, time: 302.0, gain_number: 5, gain: -30.0
+-----------------------------------------
+enemy: 8, fitness: 30.53, player: 0.0, enemy: 60.0, time: 237.0, gain_number: 1, gain: -60.0
+enemy: 8, fitness: 30.53, player: 0.0, enemy: 60.0, time: 237.0, gain_number: 2, gain: -60.0
+enemy: 8, fitness: 87.23, player: 33.40000000000027, enemy: 0.0, time: 451.0, gain_number: 3, gain: 33.40000000000027
+enemy: 8, fitness: 30.53, player: 0.0, enemy: 60.0, time: 237.0, gain_number: 4, gain: -60.0
+enemy: 8, fitness: 87.23, player: 33.40000000000027, enemy: 0.0, time: 451.0, gain_number: 5, gain: 33.40000000000027

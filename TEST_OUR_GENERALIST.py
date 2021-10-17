@@ -59,10 +59,13 @@ def run_the_whole_experiment(enemy_number, mutate_method, iteration_num):
                     append_write = 'w'
 
                 test_scores = open(filename, append_write)
+                gain = player_life_result - enemy_life_result
                 test_scores.writelines('\n' + "enemy: " + str(j) + ", fitness: " + str(round(fitness_result, 2)) +
                                        ", player: " + str(player_life_result) + ", enemy: " + str(enemy_life_result) +
-                                       ", time: " + str(game_time_result) + ", gain_number: " + str(i) +
-                                       ", gain: " + str(player_life_result-enemy_life_result))
+                                       ", time: " + str(game_time_result) +
+                                       ", gain_number: " + str(i) +
+                                       ", gain: " + str(gain))
+
                 test_scores.close()
                 fim = time.time()  # prints total execution time for experiment
                 print('\nExecution time: ' + str(round((fim - ini) / 60)) + ' minutes \n')
@@ -73,8 +76,9 @@ def run_the_whole_experiment(enemy_number, mutate_method, iteration_num):
     evaluate_the_enemies_5_times(path_to_best_solution)
 
 
-enemy_number = [2, 6]  # enemy group
-mutate_method = "adaptive"  # deap / adaptive
+
+enemy_number = [7,8]  # enemy group
+mutate_method = "deap"  # deap / adaptive
 
 for i in range(1, 11):
     run_the_whole_experiment(enemy_number, mutate_method, i)
