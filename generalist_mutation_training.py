@@ -25,7 +25,7 @@ def run_the_whole_experiment(enemy_number, mutate_method, iteration_num):
 
     """ set experiment parameters """
     population_length = 100
-    generations = 10
+    generations = 20
 
     """ constant parameters """
     n_hidden_neurons = 10
@@ -411,7 +411,7 @@ def run_the_whole_experiment(enemy_number, mutate_method, iteration_num):
 mutation_method = "deap"
 
 # next do [2, 6]
-enemies_num = [2, 6]
+enemies_num = [7,8]
 
-for i in range(8, 11):
+for i in range(1, 11):
     run_the_whole_experiment(enemies_num, mutation_method, i)
