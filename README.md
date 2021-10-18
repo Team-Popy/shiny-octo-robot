@@ -1,2 +1,2 @@
 # shiny-octo-robot
-Evolutionary computing project
+Evolutionary computing project - Group 1
