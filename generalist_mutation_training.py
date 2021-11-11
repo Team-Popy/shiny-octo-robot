@@ -17,15 +17,15 @@ fitness -> values.mean() - values.std()
 
 def run_the_whole_experiment(enemy_number, mutate_method, iteration_num):
     """ set experiment name """
-    experiment_name = "enemies_" + str(enemy_number) + "_" + mutate_method + "_" + str(iteration_num)
+    experiment_name = "enemies_" + str(enemy_number) + "_" + mutate_method + "_" + str(iteration_num) + "_DETERMINISTIC"
 
     """ set mutation settings """
     toolbox = base.Toolbox()
-    toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=0.1, indpb=0.2)
+    toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=0.3, indpb=0.2)
 
     """ set experiment parameters """
     population_length = 100
-    generations = 10
+    generations = 30
 
     """ constant parameters """
     n_hidden_neurons = 10
@@ -108,13 +108,12 @@ def run_the_whole_experiment(enemy_number, mutate_method, iteration_num):
         else:
             return weight
 
-    def two_points_crossover(population_data, fitness_for_crossover, generation):
+    def two_points_crossover(population_data, fitness_for_crossover, generation, mutation_value_test):
         first_point = int(np.random.uniform(0, n_vars, 1)[0])
         second_point = int(np.random.uniform(0, n_vars, 1)[0])
         crossover_point = [first_point, second_point]
         total_offspring = []
         mutation_rate = 0.4
-        mutation_value = 0.4
 
         for p in range(0, population_data.shape[0], 2):
             offspring_crossover = np.zeros((2, n_vars))
@@ -127,7 +126,8 @@ def run_the_whole_experiment(enemy_number, mutate_method, iteration_num):
 
             """ mutation """
             if mutate_method == "deap":
-                total_offspring = mutate(offspring_crossover, parent_1, parent_2, total_offspring)
+                total_offspring, mutation_value_test = mutate(offspring_crossover, parent_1, parent_2, total_offspring,
+                                                              mutation_value_test)
             elif mutate_method == "adaptive":
                 total_offspring, mutation_rate = mutate_adapted_rate_evaluate(offspring_crossover, parent_1, parent_2,
                                                                               fitness_for_crossover, total_offspring,
@@ -136,16 +136,19 @@ def run_the_whole_experiment(enemy_number, mutate_method, iteration_num):
                 total_offspring = mutate_self_adapted(offspring_crossover, parent_1, parent_2, total_offspring)
 
         final_total_offspring = np.vstack(total_offspring)
-        return final_total_offspring
+        return final_total_offspring, mutation_value_test
 
     def single_point_crossover(parent_1, parent_2, crossover_point):
         parent_1_new = np.append(parent_1[:crossover_point], parent_2[crossover_point:])
         parent_2_new = np.append(parent_2[:crossover_point], parent_1[crossover_point:])
         return parent_1_new, parent_2_new
 
-    def mutate(offspring_uniform, parent_1, parent_2, total_offspring):
+    def mutate(offspring_uniform, parent_1, parent_2, total_offspring, mutation_value_test_):
         offspring_uniform[0] = parent_1.copy()
         offspring_uniform[1] = parent_2.copy()
+
+        toolbox = base.Toolbox()
+        toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=mutation_value_test_, indpb=0.2)
 
         mutated_offspring_1 = toolbox.mutate(offspring_uniform[0])
         mutated_offspring_2 = toolbox.mutate(offspring_uniform[1])
@@ -156,7 +159,7 @@ def run_the_whole_experiment(enemy_number, mutate_method, iteration_num):
         total_offspring.append(mutated_offspring_1)
         total_offspring.append(mutated_offspring_2)
 
-        return total_offspring
+        return total_offspring, mutation_value_test_
 
     def mutate_adapted_rate_evaluate(offspring_uniform, parent_1, parent_2, fitness_for_crossover,
                                      total_offspring, mutation_rate, generation):
@@ -339,7 +342,8 @@ def run_the_whole_experiment(enemy_number, mutate_method, iteration_num):
 
     population_fitness = first_population_fitness.copy()
     whole_population = first_whole_population.copy()
-    climbing_index = 20
+    climbing_index = 30
+    mutation_value_1 = 0.6
 
     for f in range(ini_g + 1, generations):
         print(ini_g)
@@ -349,7 +353,7 @@ def run_the_whole_experiment(enemy_number, mutate_method, iteration_num):
         elite_members, elite_members_fitness = elitism(whole_population, population_fitness)
 
         """ choosing crossover_method """
-        offspring = two_points_crossover(whole_population, population_fitness, f)
+        offspring, mutation_value_1 = two_points_crossover(whole_population, population_fitness, f, mutation_value_1)
 
         """ then evaluate the fitness scores """
         fit_offspring = evaluate(offspring)
@@ -374,6 +378,9 @@ def run_the_whole_experiment(enemy_number, mutate_method, iteration_num):
         best = np.argmax(population_fitness)
         std = np.std(population_fitness)
         mean = np.mean(population_fitness)
+
+        mutation_value_1 -= 0.02
+        print("%%%%%%%%%%%%%%%%", mutation_value_1, "%%%%%%%%%%%%%%%%")
 
         # saves results
         file_aux = open(experiment_name + '/results.txt', 'a')
@@ -411,7 +418,7 @@ def run_the_whole_experiment(enemy_number, mutate_method, iteration_num):
 mutation_method = "deap"
 
 # next do [2, 6]
-enemies_num = [2, 6]
+enemies_num = [1, 2, 4]
 
-for i in range(8, 11):
+for i in range(1, 3):
     run_the_whole_experiment(enemies_num, mutation_method, i)
